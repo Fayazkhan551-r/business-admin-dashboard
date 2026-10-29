@@ -1,0 +1,6 @@
+{
+  "name": "PakPadel Club Manager",
+  "description": "B2B Web Admin Dashboard for managing Padel club facilities, courts, dynamic PKR pricing rules, and real-time booking matrices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
