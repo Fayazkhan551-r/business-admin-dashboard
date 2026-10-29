@@ -1,5 +1,5 @@
-import { PakPadelDashboard } from '@/components/PakPadelDashboard';
+import { PakPadelPortalApp } from '@/components/PakPadelPortalApp';
 
 export default function HomePage() {
-  return <PakPadelDashboard />;
+  return <PakPadelPortalApp />;
 }

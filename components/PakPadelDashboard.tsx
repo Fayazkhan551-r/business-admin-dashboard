@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Trophy,
@@ -71,8 +71,15 @@ export function PakPadelDashboard() {
   >(null);
 
   // Interactive header dropdown states
+  const [clubDropdownOpen, setClubDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  // Refs for "Click Outside to Close" behavior
+  const clubDropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'n1',
@@ -96,6 +103,38 @@ export function PakPadelDashboard() {
       unread: false,
     },
   ]);
+
+  // "Click Outside to Close" for club selector, notifications, and profile popovers
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+
+      if (
+        clubDropdownRef.current &&
+        !clubDropdownRef.current.contains(target)
+      ) {
+        setClubDropdownOpen(false);
+      }
+
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(target)
+      ) {
+        setNotificationsOpen(false);
+      }
+
+      if (profileMenuRef.current && !profileMenuRef.current.contains(target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   // Close mobile drawer on Escape
   useEffect(() => {
@@ -266,34 +305,34 @@ export function PakPadelDashboard() {
             type="button"
             onClick={() => handleSidebarSelect(item.id)}
             aria-current={isActive ? 'page' : undefined}
-            className={`group relative min-h-[44px] w-full flex items-center justify-between rounded-r-lg rounded-l-sm px-3.5 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 whitespace-nowrap ${
+            className={`group relative min-h-[44px] w-full flex items-center justify-between rounded-r-lg rounded-l-sm px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out active:scale-95 whitespace-nowrap ${
               isActive
-                ? 'border-l-4 border-emerald-400 bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent text-white font-semibold shadow-[inset_4px_0_16px_rgba(16,185,129,0.32),0_2px_10px_rgba(2,6,23,0.4)]'
-                : 'border-l-4 border-transparent text-slate-300 hover:border-slate-700 hover:bg-slate-800/80 hover:text-white'
+                ? 'border-l-4 border-[#228B4E] bg-[#01411C] text-[#FFFFFF] font-semibold shadow-sm'
+                : 'border-l-4 border-transparent text-[#F5FFF7]/80 hover:border-[#228B4E]/50 hover:bg-[#18271C] hover:text-[#FFFFFF]'
             }`}
           >
             {isActive && (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute -left-[3px] top-1.5 bottom-1.5 w-1 rounded-full bg-emerald-400 shadow-[0_0_12px_2px_rgba(52,211,153,0.85)]"
+                className="pointer-events-none absolute -left-[3px] top-1.5 bottom-1.5 w-1 rounded-full bg-[#228B4E]"
               />
             )}
             <span className="flex items-center gap-3">
               <Icon
-                className={`h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                className={`h-4 w-4 shrink-0 transition-all duration-200 ease-in-out group-hover:scale-105 ${
                   isActive
-                    ? 'text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.6)]'
-                    : 'text-slate-400 group-hover:text-slate-200'
+                    ? 'text-[#228B4E]'
+                    : 'text-[#F5FFF7]/60 group-hover:text-[#F5FFF7]'
                 }`}
               />
               <span>{item.label}</span>
             </span>
             {item.count && (
               <span
-                className={`rounded-md px-1.5 py-0.5 font-mono text-xs tabular-nums transition-colors ${
+                className={`rounded-md px-1.5 py-0.5 font-mono text-xs tabular-nums transition-all duration-200 ease-in-out ${
                   isActive
-                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                    : 'text-slate-400 group-hover:text-slate-200'
+                    ? 'bg-[#228B4E]/25 text-[#FFFFFF] font-bold border border-[#228B4E]/40'
+                    : 'text-[#F5FFF7]/60 group-hover:text-[#F5FFF7]'
                 }`}
               >
                 {item.count}
@@ -306,18 +345,18 @@ export function PakPadelDashboard() {
   );
 
   const renderSidebarFooter = () => (
-    <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
-      <div className="rounded-lg bg-slate-800/70 p-3.5 text-xs border border-slate-700/50">
-        <div className="flex items-center justify-between text-slate-400">
+    <div className="p-4 border-t border-[#228B4E]/20 bg-[#080F0A]/70">
+      <div className="rounded-lg bg-[#101A13] p-3.5 text-xs border border-[#228B4E]/25 transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+        <div className="flex items-center justify-between text-[#F5FFF7]/70">
           <span>Configured Courts</span>
-          <span className="font-mono text-emerald-400 tabular-nums">
+          <span className="font-mono text-[#228B4E] tabular-nums">
             {metrics.activeCourts}/{metrics.totalCourts} Active
           </span>
         </div>
-        <p className="mt-1 font-mono text-base font-bold text-white tabular-nums">
+        <p className="mt-1 font-mono text-base font-bold text-[#FFFFFF] tabular-nums">
           {formatPkr(metrics.estimatedDailyRevenuePkr)}
         </p>
-        <p className="mt-1 text-[11px] text-slate-400 truncate">
+        <p className="mt-1 text-[11px] text-[#F5FFF7]/70 truncate">
           {currentClub.city} · {currentClub.openingTime}–
           {currentClub.closingTime} PKT
         </p>
@@ -326,12 +365,12 @@ export function PakPadelDashboard() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-950">
+    <div className="flex h-screen w-full overflow-hidden bg-[#080F0A]">
       {/* Dark Glassmorphism Backdrop Overlay for Mobile (< lg) */}
       <div
         onClick={() => setMobileMenuOpen(false)}
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 z-40 bg-[#080F0A]/70 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
           mobileMenuOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -341,24 +380,25 @@ export function PakPadelDashboard() {
       {/* Fixed/Sticky Left Sidebar with Smooth 3D Slide & Fade Reveal */}
       <aside
         aria-label="Sidebar Navigation"
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 shrink-0 flex-col justify-between border-r border-slate-800 bg-slate-900 text-slate-200 overflow-y-auto origin-left transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] lg:static lg:z-auto lg:translate-x-0 lg:opacity-100 lg:shadow-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-950/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-700/80 hover:[&::-webkit-scrollbar-thumb]:bg-emerald-500/80 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 shrink-0 flex-col justify-between border-r border-[#228B4E]/20 bg-[#101A13] text-[#F5FFF7] overflow-y-auto origin-left transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] lg:static lg:z-auto lg:translate-x-0 lg:opacity-100 lg:shadow-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#080F0A] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#01411C] hover:[&::-webkit-scrollbar-thumb]:bg-[#228B4E] ${
           mobileMenuOpen
-            ? 'translate-x-0 opacity-100 shadow-[24px_0_60px_rgba(2,6,23,0.85)]'
+            ? 'translate-x-0 opacity-100 shadow-[24px_0_60px_rgba(5,11,7,0.9)]'
             : '-translate-x-full opacity-95'
         }`}
       >
         <div>
-          {/* Brand Lockup + Mobile Close Button */}
-          <div className="flex items-center justify-between px-5 py-5 border-b border-slate-800/80">
+          {/* Official Brand Logo + Mobile Close Button */}
+          <div className="flex items-center justify-between px-5 py-5 border-b border-[#228B4E]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 font-display text-sm font-bold text-slate-950 shadow-[0_0_14px_rgba(16,185,129,0.4)]">
-                PP
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/aistudio/pakpadel_logho_bf2e0951.jpg"
+                alt="PakPadel"
+                referrerPolicy="no-referrer"
+                className="h-8 md:h-10 w-auto object-contain rounded-lg bg-[#FFFFFF] p-0.5 shadow-xs transition-all duration-200 ease-in-out"
+              />
               <div>
-                <span className="block font-display text-base font-bold tracking-tight text-white whitespace-nowrap">
-                  PakPadel
-                </span>
-                <span className="block text-[11px] font-medium text-emerald-400">
+                <span className="block text-[11px] font-semibold text-[#228B4E]">
                   Club Manager B2B
                 </span>
               </div>
@@ -368,7 +408,7 @@ export function PakPadelDashboard() {
               type="button"
               onClick={() => setMobileMenuOpen(false)}
               aria-label="Close navigation menu"
-              className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg text-slate-300 transition-all duration-200 hover:bg-slate-800 hover:text-white active:scale-95"
+              className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg text-[#F5FFF7]/80 transition-all duration-200 ease-in-out hover:bg-[#18271C] hover:text-[#FFFFFF] active:scale-95"
             >
               <X className="h-5 w-5" />
             </button>
@@ -381,9 +421,9 @@ export function PakPadelDashboard() {
       </aside>
 
       {/* Main Content Area: Independent Vertical Scrolling */}
-      <main className="flex-1 h-full overflow-y-auto bg-slate-50 text-slate-900 min-w-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-950/10 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-700/75 hover:[&::-webkit-scrollbar-thumb]:bg-emerald-500">
+      <main className="flex-1 h-full overflow-y-auto bg-[#F7FAF8] text-[#102117] min-w-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#102117]/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#01411C] hover:[&::-webkit-scrollbar-thumb]:bg-[#228B4E]">
         {/* Top Navbar: Sticky at top of scrollable main container */}
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md px-4 py-3 sm:px-6">
+        <header className="sticky top-0 z-30 border-b border-[#102117]/12 bg-[#FFFFFF]/95 backdrop-blur-md px-4 py-3 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Left Zone: Hamburger Menu (< lg), Club Selector Dropdown, System Status */}
             <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
@@ -393,33 +433,74 @@ export function PakPadelDashboard() {
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Open navigation menu"
                 aria-expanded={mobileMenuOpen}
-                className="inline-flex lg:hidden h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-200 hover:bg-slate-100 active:scale-95"
+                className="inline-flex lg:hidden h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#102117]/15 bg-[#F7FAF8] text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 active:scale-95"
               >
                 <Menu className="h-5 w-5" />
               </button>
 
-              {/* Club Selector Dropdown */}
-              <div className="relative flex-1 sm:flex-initial min-w-[200px]">
-                <label htmlFor="top-club-selector" className="sr-only">
-                  Select Club Branch
-                </label>
-                <select
-                  id="top-club-selector"
+              {/* Club Selector Dropdown with "Click Outside to Close" */}
+              <div
+                ref={clubDropdownRef}
+                className="relative flex-1 sm:flex-initial min-w-[220px]"
+              >
+                <button
+                  type="button"
                   aria-label="Club selector"
-                  value={selectedClubId}
-                  onChange={(e) => {
-                    setSelectedClubId(e.target.value);
-                    setLastSavedCourtMessage(null);
+                  aria-expanded={clubDropdownOpen}
+                  aria-haspopup="listbox"
+                  onClick={() => {
+                    setClubDropdownOpen((prev) => !prev);
+                    setNotificationsOpen(false);
+                    setProfileMenuOpen(false);
                   }}
-                  className="min-h-[44px] w-full appearance-none rounded-lg border border-slate-300 bg-slate-50 py-2 pl-3.5 pr-9 font-display text-xs sm:text-sm font-bold text-slate-900 transition-colors hover:border-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none truncate"
+                  className="min-h-[44px] w-full flex items-center justify-between gap-2 rounded-lg border border-[#102117]/20 bg-[#F7FAF8] py-2 pl-3.5 pr-3 font-display text-xs sm:text-sm font-bold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 focus:border-[#228B4E] focus:outline-none"
                 >
-                  {clubs.map((branch) => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <span className="truncate">{currentClub.name}</span>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-[#102117]/60 transition-all duration-200 ease-in-out ${
+                      clubDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {clubDropdownOpen && (
+                  <div
+                    role="listbox"
+                    aria-label="Select Club Branch"
+                    className="absolute left-0 mt-2 w-72 max-w-[90vw] rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-1.5 shadow-xl z-40 space-y-0.5"
+                  >
+                    {clubs.map((branch) => {
+                      const active = branch.id === selectedClubId;
+                      return (
+                        <button
+                          key={branch.id}
+                          type="button"
+                          role="option"
+                          aria-selected={active}
+                          onClick={() => {
+                            setSelectedClubId(branch.id);
+                            setLastSavedCourtMessage(null);
+                            setClubDropdownOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all duration-200 ease-in-out ${
+                            active
+                              ? 'bg-[#01411C] text-[#FFFFFF]'
+                              : 'text-[#102117] hover:bg-[#D6EFE0]/50'
+                          }`}
+                        >
+                          <span className="truncate">{branch.name}</span>
+                          <span
+                            className={`font-mono text-[11px] shrink-0 ml-2 ${
+                              active ? 'text-[#FFFFFF]/85' : 'text-[#228B4E]'
+                            }`}
+                          >
+                            {branch.city}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* System Status Control ("Live & Accepting Bookings") */}
@@ -427,14 +508,14 @@ export function PakPadelDashboard() {
                 type="button"
                 onClick={handleToggleLiveStatus}
                 title="Click to toggle online booking availability"
-                className={`min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                className={`min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all duration-200 ease-in-out hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap shrink-0 ${
                   currentClub.isLive
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                    ? 'border-[#228B4E]/30 bg-[#D6EFE0]/50 text-[#01411C] hover:brightness-105'
                     : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
                 }`}
               >
                 {currentClub.isLive ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[#228B4E] shrink-0" />
                 ) : (
                   <PauseCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                 )}
@@ -448,18 +529,18 @@ export function PakPadelDashboard() {
 
             {/* Right Zone: Quick Action "+ Add New Court", Notification Icon, Admin Profile Dropdown */}
             <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-              {/* Quick Action Button "+ Add New Court" */}
+              {/* Quick Action Button "+ Add New Court" — Primary 3D Tactile Button */}
               <button
                 type="button"
                 onClick={handleOpenAddCourtModal}
-                className="min-h-[44px] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-slate-950 shadow-xs transition-all duration-200 hover:bg-emerald-400 active:scale-95 whitespace-nowrap shrink-0"
+                className="min-h-[44px] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#01411C] border-b-4 border-[#003014] px-4 py-2 text-xs font-bold text-[#FFFFFF] shadow-xs transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap shrink-0"
               >
                 <Plus className="h-4 w-4 stroke-[2.5]" />
                 <span>+ Add New Court</span>
               </button>
 
-              {/* Notification Icon & Dropdown */}
-              <div className="relative">
+              {/* Notification Icon & Dropdown with "Click Outside to Close" */}
+              <div ref={notificationsRef} className="relative">
                 <button
                   type="button"
                   aria-label={`Notifications (${unreadCount} unread)`}
@@ -467,21 +548,22 @@ export function PakPadelDashboard() {
                   onClick={() => {
                     setNotificationsOpen((prev) => !prev);
                     setProfileMenuOpen(false);
+                    setClubDropdownOpen(false);
                   }}
-                  className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                  className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#102117]/15 bg-[#FFFFFF] text-[#102117]/75 transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 hover:text-[#102117]"
                 >
-                  <Bell className="h-4 w-4" />
+                  <Bell className="h-4 w-4 transition-all duration-200 ease-in-out" />
                   {unreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 font-mono text-[10px] font-bold text-slate-950 tabular-nums">
+                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#228B4E] px-1 font-mono text-[10px] font-bold text-[#FFFFFF] tabular-nums">
                       {unreadCount}
                     </span>
                   )}
                 </button>
 
                 {notificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-xl border border-slate-200 bg-white p-4 shadow-lg z-40">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                      <span className="font-display text-xs font-bold text-slate-900">
+                  <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-4 shadow-lg z-40">
+                    <div className="flex items-center justify-between border-b border-[#102117]/10 pb-2.5">
+                      <span className="font-display text-xs font-bold text-[#102117]">
                         Club Activity & Bookings
                       </span>
                       <button
@@ -491,21 +573,26 @@ export function PakPadelDashboard() {
                             prev.map((n) => ({ ...n, unread: false }))
                           )
                         }
-                        className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700"
+                        className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-[#228B4E] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
                       >
                         Mark all read
                       </button>
                     </div>
-                    <div className="mt-2 divide-y divide-slate-100">
+                    <div className="mt-2 divide-y divide-[#102117]/10">
                       {notifications.map((item) => (
-                        <div key={item.id} className="py-2.5 text-xs">
-                          <div className="flex items-center justify-between font-semibold text-slate-900">
+                        <div
+                          key={item.id}
+                          className="rounded-lg px-2 py-2.5 text-xs transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                        >
+                          <div className="flex items-center justify-between font-semibold text-[#102117]">
                             <span>{item.title}</span>
-                            <span className="font-mono text-[10px] font-normal text-slate-400 tabular-nums">
+                            <span className="font-mono text-[10px] font-normal text-[#102117]/55 tabular-nums">
                               {item.time}
                             </span>
                           </div>
-                          <p className="mt-0.5 text-slate-500">{item.detail}</p>
+                          <p className="mt-0.5 text-[#102117]/70">
+                            {item.detail}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -513,8 +600,8 @@ export function PakPadelDashboard() {
                 )}
               </div>
 
-              {/* Admin Profile Dropdown */}
-              <div className="relative">
+              {/* Admin Profile Dropdown with "Click Outside to Close" */}
+              <div ref={profileMenuRef} className="relative">
                 <button
                   type="button"
                   aria-label="Admin Profile Menu"
@@ -522,33 +609,38 @@ export function PakPadelDashboard() {
                   onClick={() => {
                     setProfileMenuOpen((prev) => !prev);
                     setNotificationsOpen(false);
+                    setClubDropdownOpen(false);
                   }}
-                  className="min-h-[44px] flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white py-1.5 pl-2 pr-3 text-left transition-colors hover:bg-slate-50"
+                  className="min-h-[44px] flex items-center gap-2.5 rounded-lg border border-[#102117]/15 bg-[#FFFFFF] py-1.5 pl-2 pr-3 text-left transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-900 font-display text-xs font-bold text-emerald-400">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#01411C] font-display text-xs font-bold text-[#FFFFFF]">
                     {currentClub.managerName
                       .split(' ')
                       .map((p) => p[0])
                       .join('')}
                   </div>
                   <div className="hidden md:block">
-                    <span className="block text-xs font-bold leading-none text-slate-900">
+                    <span className="block text-xs font-bold leading-none text-[#102117]">
                       {currentClub.managerName}
                     </span>
-                    <span className="mt-0.5 block text-[10px] font-medium text-slate-500">
+                    <span className="mt-0.5 block text-[10px] font-medium text-[#102117]/65">
                       Club Director
                     </span>
                   </div>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 text-[#102117]/55 transition-all duration-200 ease-in-out ${
+                      profileMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
 
                 {profileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-lg z-40 text-xs">
-                    <div className="border-b border-slate-100 pb-2.5">
-                      <p className="font-bold text-slate-900">
+                  <div className="absolute right-0 mt-2 w-60 rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-3 shadow-lg z-40 text-xs">
+                    <div className="border-b border-[#102117]/10 pb-2.5">
+                      <p className="font-bold text-[#102117]">
                         {currentClub.managerName}
                       </p>
-                      <p className="text-slate-500">
+                      <p className="text-[#102117]/65">
                         admin@pakpadel.pk · {currentClub.city}
                       </p>
                     </div>
@@ -559,9 +651,9 @@ export function PakPadelDashboard() {
                           handleTabSelect('profile');
                           setProfileMenuOpen(false);
                         }}
-                        className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-slate-700 hover:bg-slate-50"
+                        className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
                       >
-                        <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                        <UserCheck className="h-3.5 w-3.5 text-[#228B4E]" />
                         Club Profile & Facilities
                       </button>
                       <button
@@ -570,9 +662,9 @@ export function PakPadelDashboard() {
                           handleSidebarSelect('Settings');
                           setProfileMenuOpen(false);
                         }}
-                        className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-slate-700 hover:bg-slate-50"
+                        className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
                       >
-                        <Settings className="h-3.5 w-3.5 text-slate-500" />
+                        <Settings className="h-3.5 w-3.5 text-[#102117]/65" />
                         Booking & Payment Policies
                       </button>
                     </div>
@@ -586,12 +678,12 @@ export function PakPadelDashboard() {
         {/* Inner Workspace Content */}
         <div className="p-4 sm:p-6 lg:p-8 max-w-[1440px] w-full mx-auto space-y-6">
           {/* Page Header & Two-Tab Switcher Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#102117]/12 pb-5">
             <div>
-              <p className="text-xs font-semibold text-emerald-600">
+              <p className="text-xs font-semibold text-[#228B4E]">
                 Playtomic-Standard Venue Operations · {currentClub.city}, Pakistan
               </p>
-              <h1 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              <h1 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#102117]">
                 {currentClub.name}
               </h1>
             </div>
@@ -600,20 +692,20 @@ export function PakPadelDashboard() {
             <div
               role="tablist"
               aria-label="Club Manager Workspace Views"
-              className="grid grid-cols-2 sm:flex items-center gap-1.5 rounded-xl bg-slate-200/80 p-1 w-full sm:w-auto"
+              className="grid grid-cols-2 sm:flex items-center gap-1.5 rounded-xl bg-[#102117]/10 p-1 w-full sm:w-auto"
             >
               <button
                 type="button"
                 role="tab"
                 aria-selected={!isSecondaryView && activeTab === 'profile'}
                 onClick={() => handleTabSelect('profile')}
-                className={`min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all duration-200 active:scale-95 whitespace-nowrap shrink-0 ${
+                className={`min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all duration-200 ease-in-out whitespace-nowrap shrink-0 ${
                   !isSecondaryView && activeTab === 'profile'
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-950'
+                    ? 'bg-[#01411C] text-[#FFFFFF] shadow-xs hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0'
+                    : 'text-[#102117]/80 hover:bg-[#D6EFE0]/50 hover:text-[#102117]'
                 }`}
               >
-                <Building2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <Building2 className="h-3.5 w-3.5 text-[#228B4E] shrink-0" />
                 <span className="truncate">Club Profile & Facilities</span>
               </button>
 
@@ -622,13 +714,13 @@ export function PakPadelDashboard() {
                 role="tab"
                 aria-selected={!isSecondaryView && activeTab === 'courts'}
                 onClick={() => handleTabSelect('courts')}
-                className={`min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all duration-200 active:scale-95 whitespace-nowrap shrink-0 ${
+                className={`min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all duration-200 ease-in-out whitespace-nowrap shrink-0 ${
                   !isSecondaryView && activeTab === 'courts'
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-950'
+                    ? 'bg-[#01411C] text-[#FFFFFF] shadow-xs hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0'
+                    : 'text-[#102117]/80 hover:bg-[#D6EFE0]/50 hover:text-[#102117]'
                 }`}
               >
-                <Layers className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <Layers className="h-3.5 w-3.5 text-[#228B4E] shrink-0" />
                 <span className="truncate">
                   Courts Management ({currentClub.courts.length})
                 </span>
