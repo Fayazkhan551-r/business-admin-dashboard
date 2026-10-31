@@ -365,7 +365,7 @@ export function PakPadelDashboard() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#080F0A]">
+    <div className="flex min-h-[calc(100vh-3rem)] lg:h-[calc(100vh-4.5rem)] w-full overflow-x-hidden lg:overflow-hidden bg-[#080F0A]">
       {/* Dark Glassmorphism Backdrop Overlay for Mobile (< lg) */}
       <div
         onClick={() => setMobileMenuOpen(false)}
@@ -421,94 +421,235 @@ export function PakPadelDashboard() {
       </aside>
 
       {/* Main Content Area: Independent Vertical Scrolling */}
-      <main className="flex-1 h-full overflow-y-auto bg-[#F7FAF8] text-[#102117] min-w-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#102117]/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#01411C] hover:[&::-webkit-scrollbar-thumb]:bg-[#228B4E]">
+      <main className="flex-1 h-full overflow-y-auto overflow-x-hidden bg-[#F7FAF8] text-[#102117] min-w-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#102117]/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#01411C] hover:[&::-webkit-scrollbar-thumb]:bg-[#228B4E]">
         {/* Top Navbar: Sticky at top of scrollable main container */}
-        <header className="sticky top-0 z-30 border-b border-[#102117]/12 bg-[#FFFFFF]/95 backdrop-blur-md px-4 py-3 sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left Zone: Hamburger Menu (< lg), Club Selector Dropdown, System Status */}
-            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
-              {/* Mobile Hamburger Menu Button */}
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                aria-label="Open navigation menu"
-                aria-expanded={mobileMenuOpen}
-                className="inline-flex lg:hidden h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#102117]/15 bg-[#F7FAF8] text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 active:scale-95"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-
-              {/* Club Selector Dropdown with "Click Outside to Close" */}
-              <div
-                ref={clubDropdownRef}
-                className="relative flex-1 sm:flex-initial min-w-[220px]"
-              >
+        <header className="sticky top-0 z-30 border-b border-[#102117]/12 bg-[#FFFFFF]/95 backdrop-blur-md px-3.5 py-2.5 sm:px-6 sm:py-3">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            {/* Top Header Row: [Hamburger Menu + PakPadel Club Dropdown] on left, [Bell + Profile Avatar] on right */}
+            <div className="flex items-center justify-between gap-2 w-full sm:flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {/* Mobile Hamburger Menu Button */}
                 <button
                   type="button"
-                  aria-label="Club selector"
-                  aria-expanded={clubDropdownOpen}
-                  aria-haspopup="listbox"
-                  onClick={() => {
-                    setClubDropdownOpen((prev) => !prev);
-                    setNotificationsOpen(false);
-                    setProfileMenuOpen(false);
-                  }}
-                  className="min-h-[44px] w-full flex items-center justify-between gap-2 rounded-lg border border-[#102117]/20 bg-[#F7FAF8] py-2 pl-3.5 pr-3 font-display text-xs sm:text-sm font-bold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 focus:border-[#228B4E] focus:outline-none"
+                  onClick={() => setMobileMenuOpen(true)}
+                  aria-label="Open navigation menu"
+                  aria-expanded={mobileMenuOpen}
+                  className="inline-flex lg:hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#102117]/15 bg-[#F7FAF8] text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 active:scale-95"
                 >
-                  <span className="truncate">{currentClub.name}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-[#102117]/60 transition-all duration-200 ease-in-out ${
-                      clubDropdownOpen ? 'rotate-180' : ''
-                    }`}
-                  />
+                  <Menu className="h-5 w-5" />
                 </button>
 
-                {clubDropdownOpen && (
-                  <div
-                    role="listbox"
-                    aria-label="Select Club Branch"
-                    className="absolute left-0 mt-2 w-72 max-w-[90vw] rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-1.5 shadow-xl z-40 space-y-0.5"
+                {/* Club Selector Dropdown with "Click Outside to Close" */}
+                <div
+                  ref={clubDropdownRef}
+                  className="relative flex-1 sm:max-w-[280px] min-w-0"
+                >
+                  <button
+                    type="button"
+                    aria-label="Club selector"
+                    aria-expanded={clubDropdownOpen}
+                    aria-haspopup="listbox"
+                    onClick={() => {
+                      setClubDropdownOpen((prev) => !prev);
+                      setNotificationsOpen(false);
+                      setProfileMenuOpen(false);
+                    }}
+                    className="min-h-[40px] sm:min-h-[42px] w-full flex items-center justify-between gap-2 rounded-lg border border-[#102117]/20 bg-[#F7FAF8] py-1.5 pl-3 pr-2.5 font-display text-xs sm:text-sm font-bold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 focus:border-[#228B4E] focus:outline-none"
                   >
-                    {clubs.map((branch) => {
-                      const active = branch.id === selectedClubId;
-                      return (
-                        <button
-                          key={branch.id}
-                          type="button"
-                          role="option"
-                          aria-selected={active}
-                          onClick={() => {
-                            setSelectedClubId(branch.id);
-                            setLastSavedCourtMessage(null);
-                            setClubDropdownOpen(false);
-                          }}
-                          className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all duration-200 ease-in-out ${
-                            active
-                              ? 'bg-[#01411C] text-[#FFFFFF]'
-                              : 'text-[#102117] hover:bg-[#D6EFE0]/50'
-                          }`}
-                        >
-                          <span className="truncate">{branch.name}</span>
-                          <span
-                            className={`font-mono text-[11px] shrink-0 ml-2 ${
-                              active ? 'text-[#FFFFFF]/85' : 'text-[#228B4E]'
+                    <span className="truncate">{currentClub.name}</span>
+                    <ChevronDown
+                      className={`h-4 w-4 shrink-0 text-[#102117]/60 transition-all duration-200 ease-in-out ${
+                        clubDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {clubDropdownOpen && (
+                    <div
+                      role="listbox"
+                      aria-label="Select Club Branch"
+                      className="absolute left-0 mt-2 w-72 max-w-[88vw] rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-1.5 shadow-xl z-40 space-y-0.5"
+                    >
+                      {clubs.map((branch) => {
+                        const active = branch.id === selectedClubId;
+                        return (
+                          <button
+                            key={branch.id}
+                            type="button"
+                            role="option"
+                            aria-selected={active}
+                            onClick={() => {
+                              setSelectedClubId(branch.id);
+                              setLastSavedCourtMessage(null);
+                              setClubDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all duration-200 ease-in-out ${
+                              active
+                                ? 'bg-[#01411C] text-[#FFFFFF]'
+                                : 'text-[#102117] hover:bg-[#D6EFE0]/50'
                             }`}
                           >
-                            {branch.city}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                            <span className="truncate">{branch.name}</span>
+                            <span
+                              className={`font-mono text-[11px] shrink-0 ml-2 ${
+                                active ? 'text-[#FFFFFF]/85' : 'text-[#228B4E]'
+                              }`}
+                            >
+                              {branch.city}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* Right Compact Group on Top Row: [Bell + Profile Avatar] */}
+              <div className="flex items-center gap-2 shrink-0 sm:order-last">
+                {/* Notification Icon & Dropdown with "Click Outside to Close" */}
+                <div ref={notificationsRef} className="relative">
+                  <button
+                    type="button"
+                    aria-label={`Notifications (${unreadCount} unread)`}
+                    aria-expanded={notificationsOpen}
+                    onClick={() => {
+                      setNotificationsOpen((prev) => !prev);
+                      setProfileMenuOpen(false);
+                      setClubDropdownOpen(false);
+                    }}
+                    className="relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg border border-[#102117]/15 bg-[#FFFFFF] text-[#102117]/75 transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 hover:text-[#102117]"
+                  >
+                    <Bell className="h-4 w-4 transition-all duration-200 ease-in-out" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#228B4E] px-1 font-mono text-[10px] font-bold text-[#FFFFFF] tabular-nums">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {notificationsOpen && (
+                    <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-4 shadow-lg z-40">
+                      <div className="flex items-center justify-between border-b border-[#102117]/10 pb-2.5">
+                        <span className="font-display text-xs font-bold text-[#102117]">
+                          Club Activity & Bookings
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setNotifications((prev) =>
+                              prev.map((n) => ({ ...n, unread: false }))
+                            )
+                          }
+                          className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-[#228B4E] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                        >
+                          Mark all read
+                        </button>
+                      </div>
+                      <div className="mt-2 divide-y divide-[#102117]/10">
+                        {notifications.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-lg px-2 py-2.5 text-xs transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                          >
+                            <div className="flex items-center justify-between font-semibold text-[#102117]">
+                              <span>{item.title}</span>
+                              <span className="font-mono text-[10px] font-normal text-[#102117]/55 tabular-nums">
+                                {item.time}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-[#102117]/70">
+                              {item.detail}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Admin Profile Dropdown with "Click Outside to Close" */}
+                <div ref={profileMenuRef} className="relative">
+                  <button
+                    type="button"
+                    aria-label="Admin Profile Menu"
+                    aria-expanded={profileMenuOpen}
+                    onClick={() => {
+                      setProfileMenuOpen((prev) => !prev);
+                      setNotificationsOpen(false);
+                      setClubDropdownOpen(false);
+                    }}
+                    className="min-h-[40px] sm:min-h-[42px] flex items-center gap-2 rounded-lg border border-[#102117]/15 bg-[#FFFFFF] py-1.5 pl-2 pr-2.5 text-left transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                  >
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#01411C] font-display text-xs font-bold text-[#FFFFFF]">
+                      {currentClub.managerName
+                        .split(' ')
+                        .map((p) => p[0])
+                        .join('')}
+                    </div>
+                    <div className="hidden md:block">
+                      <span className="block text-xs font-bold leading-none text-[#102117]">
+                        {currentClub.managerName}
+                      </span>
+                      <span className="mt-0.5 block text-[10px] font-medium text-[#102117]/65">
+                        Club Director
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 text-[#102117]/55 transition-all duration-200 ease-in-out ${
+                        profileMenuOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-60 rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-3 shadow-lg z-40 text-xs">
+                      <div className="border-b border-[#102117]/10 pb-2.5">
+                        <p className="font-bold text-[#102117]">
+                          {currentClub.managerName}
+                        </p>
+                        <p className="text-[#102117]/65">
+                          admin@pakpadel.pk · {currentClub.city}
+                        </p>
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleTabSelect('profile');
+                            setProfileMenuOpen(false);
+                          }}
+                          className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                        >
+                          <UserCheck className="h-3.5 w-3.5 text-[#228B4E]" />
+                          Club Profile & Facilities
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleSidebarSelect('Settings');
+                            setProfileMenuOpen(false);
+                          }}
+                          className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                        >
+                          <Settings className="h-3.5 w-3.5 text-[#102117]/65" />
+                          Booking & Payment Policies
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Sub-Action Row: Place "Live & Accepting Bookings" pill badge and "+ Add New Court" button side-by-side */}
+            <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center shrink-0">
               {/* System Status Control ("Live & Accepting Bookings") */}
               <button
                 type="button"
                 onClick={handleToggleLiveStatus}
                 title="Click to toggle online booking availability"
-                className={`min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all duration-200 ease-in-out hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap shrink-0 ${
+                className={`min-h-[40px] sm:min-h-[42px] inline-flex items-center justify-center gap-1.5 rounded-lg border px-2.5 sm:px-3 py-2 text-xs font-semibold transition-all duration-200 ease-in-out hover:-translate-y-0.5 active:translate-y-0 min-w-0 ${
                   currentClub.isLive
                     ? 'border-[#228B4E]/30 bg-[#D6EFE0]/50 text-[#01411C] hover:brightness-105'
                     : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
@@ -519,158 +660,22 @@ export function PakPadelDashboard() {
                 ) : (
                   <PauseCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                 )}
-                <span>
+                <span className="truncate">
                   {currentClub.isLive
                     ? 'Live & Accepting Bookings'
-                    : 'Paused — Maintenance Mode'}
+                    : 'Paused — Maintenance'}
                 </span>
               </button>
-            </div>
 
-            {/* Right Zone: Quick Action "+ Add New Court", Notification Icon, Admin Profile Dropdown */}
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
               {/* Quick Action Button "+ Add New Court" — Primary 3D Tactile Button */}
               <button
                 type="button"
                 onClick={handleOpenAddCourtModal}
-                className="min-h-[44px] flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#01411C] border-b-4 border-[#003014] px-4 py-2 text-xs font-bold text-[#FFFFFF] shadow-xs transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap shrink-0"
+                className="min-h-[40px] sm:min-h-[42px] inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#01411C] border-b-4 border-[#003014] px-3 sm:px-4 py-2 text-xs font-bold text-[#FFFFFF] shadow-xs transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 min-w-0"
               >
-                <Plus className="h-4 w-4 stroke-[2.5]" />
-                <span>+ Add New Court</span>
+                <Plus className="h-4 w-4 stroke-[2.5] shrink-0" />
+                <span className="truncate">+ Add New Court</span>
               </button>
-
-              {/* Notification Icon & Dropdown with "Click Outside to Close" */}
-              <div ref={notificationsRef} className="relative">
-                <button
-                  type="button"
-                  aria-label={`Notifications (${unreadCount} unread)`}
-                  aria-expanded={notificationsOpen}
-                  onClick={() => {
-                    setNotificationsOpen((prev) => !prev);
-                    setProfileMenuOpen(false);
-                    setClubDropdownOpen(false);
-                  }}
-                  className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#102117]/15 bg-[#FFFFFF] text-[#102117]/75 transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50 hover:text-[#102117]"
-                >
-                  <Bell className="h-4 w-4 transition-all duration-200 ease-in-out" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#228B4E] px-1 font-mono text-[10px] font-bold text-[#FFFFFF] tabular-nums">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {notificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-4 shadow-lg z-40">
-                    <div className="flex items-center justify-between border-b border-[#102117]/10 pb-2.5">
-                      <span className="font-display text-xs font-bold text-[#102117]">
-                        Club Activity & Bookings
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setNotifications((prev) =>
-                            prev.map((n) => ({ ...n, unread: false }))
-                          )
-                        }
-                        className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-[#228B4E] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                      >
-                        Mark all read
-                      </button>
-                    </div>
-                    <div className="mt-2 divide-y divide-[#102117]/10">
-                      {notifications.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-lg px-2 py-2.5 text-xs transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                        >
-                          <div className="flex items-center justify-between font-semibold text-[#102117]">
-                            <span>{item.title}</span>
-                            <span className="font-mono text-[10px] font-normal text-[#102117]/55 tabular-nums">
-                              {item.time}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 text-[#102117]/70">
-                            {item.detail}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Admin Profile Dropdown with "Click Outside to Close" */}
-              <div ref={profileMenuRef} className="relative">
-                <button
-                  type="button"
-                  aria-label="Admin Profile Menu"
-                  aria-expanded={profileMenuOpen}
-                  onClick={() => {
-                    setProfileMenuOpen((prev) => !prev);
-                    setNotificationsOpen(false);
-                    setClubDropdownOpen(false);
-                  }}
-                  className="min-h-[44px] flex items-center gap-2.5 rounded-lg border border-[#102117]/15 bg-[#FFFFFF] py-1.5 pl-2 pr-3 text-left transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#01411C] font-display text-xs font-bold text-[#FFFFFF]">
-                    {currentClub.managerName
-                      .split(' ')
-                      .map((p) => p[0])
-                      .join('')}
-                  </div>
-                  <div className="hidden md:block">
-                    <span className="block text-xs font-bold leading-none text-[#102117]">
-                      {currentClub.managerName}
-                    </span>
-                    <span className="mt-0.5 block text-[10px] font-medium text-[#102117]/65">
-                      Club Director
-                    </span>
-                  </div>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 text-[#102117]/55 transition-all duration-200 ease-in-out ${
-                      profileMenuOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {profileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-60 rounded-xl border border-[#102117]/15 bg-[#FFFFFF] p-3 shadow-lg z-40 text-xs">
-                    <div className="border-b border-[#102117]/10 pb-2.5">
-                      <p className="font-bold text-[#102117]">
-                        {currentClub.managerName}
-                      </p>
-                      <p className="text-[#102117]/65">
-                        admin@pakpadel.pk · {currentClub.city}
-                      </p>
-                    </div>
-                    <div className="mt-2 space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleTabSelect('profile');
-                          setProfileMenuOpen(false);
-                        }}
-                        className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                      >
-                        <UserCheck className="h-3.5 w-3.5 text-[#228B4E]" />
-                        Club Profile & Facilities
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleSidebarSelect('Settings');
-                          setProfileMenuOpen(false);
-                        }}
-                        className="min-h-[40px] flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                      >
-                        <Settings className="h-3.5 w-3.5 text-[#102117]/65" />
-                        Booking & Payment Policies
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </header>
@@ -688,18 +693,18 @@ export function PakPadelDashboard() {
               </h1>
             </div>
 
-            {/* Primary Workspace Tabs (Tab A & Tab B always accessible) */}
+            {/* Primary Workspace Tabs (Tab A & Tab B evenly sized on mobile without cutting off) */}
             <div
               role="tablist"
               aria-label="Club Manager Workspace Views"
-              className="grid grid-cols-2 sm:flex items-center gap-1.5 rounded-xl bg-[#102117]/10 p-1 w-full sm:w-auto"
+              className="grid grid-cols-2 w-full gap-2 sm:flex sm:w-auto items-center rounded-xl bg-[#102117]/10 p-1"
             >
               <button
                 type="button"
                 role="tab"
                 aria-selected={!isSecondaryView && activeTab === 'profile'}
                 onClick={() => handleTabSelect('profile')}
-                className={`min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all duration-200 ease-in-out whitespace-nowrap shrink-0 ${
+                className={`min-h-[40px] w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg text-xs font-semibold px-2 sm:px-4 py-2 text-center truncate transition-all duration-200 ease-in-out ${
                   !isSecondaryView && activeTab === 'profile'
                     ? 'bg-[#01411C] text-[#FFFFFF] shadow-xs hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0'
                     : 'text-[#102117]/80 hover:bg-[#D6EFE0]/50 hover:text-[#102117]'
@@ -714,7 +719,7 @@ export function PakPadelDashboard() {
                 role="tab"
                 aria-selected={!isSecondaryView && activeTab === 'courts'}
                 onClick={() => handleTabSelect('courts')}
-                className={`min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all duration-200 ease-in-out whitespace-nowrap shrink-0 ${
+                className={`min-h-[40px] w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg text-xs font-semibold px-2 sm:px-4 py-2 text-center truncate transition-all duration-200 ease-in-out ${
                   !isSecondaryView && activeTab === 'courts'
                     ? 'bg-[#01411C] text-[#FFFFFF] shadow-xs hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0'
                     : 'text-[#102117]/80 hover:bg-[#D6EFE0]/50 hover:text-[#102117]'

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
+  Building2,
   CheckCircle2,
   ChevronDown,
   Eye,
@@ -17,9 +18,13 @@ import {
   Moon,
   Plus,
   ShieldCheck,
-  Smartphone,
+  Sparkles,
   Sun,
+  TrendingUp,
   UserCheck,
+  Users,
+  Wallet,
+  Grid,
   X,
 } from 'lucide-react';
 import {
@@ -35,6 +40,8 @@ import {
 import { PAKPADEL_TOKENS } from '@/lib/tokens';
 import { formatPkr } from '@/lib/club-logic';
 import { PakPadelDashboard } from './PakPadelDashboard';
+import { PadelCommunitySection } from './PadelCommunitySection';
+import { PakPadelCommercialSections } from './PakPadelCommercialSections';
 
 interface CityNetworkInfo {
   city: 'Islamabad' | 'Rawalpindi' | 'Lahore' | 'Karachi';
@@ -116,6 +123,39 @@ const QUICK_BOOKING_SLOTS = [
   },
 ];
 
+const HERO_LIFESTYLE_PANELS = [
+  {
+    id: 'action',
+    tag: '01 · Action',
+    title: 'High-Octane Jump Smash',
+    caption: 'FIP Pro-Turf · Championship Cages',
+    replacementPath: '/hero-action.jpg',
+    src: 'https://images.unsplash.com/photo-1658723826297-fe4d1b1e6600?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+    alt: 'Padel player executing a high-octane jump smash at the net',
+    badge: null,
+  },
+  {
+    id: 'social',
+    tag: '02 · Social',
+    title: 'Post-Rally Net High-Five',
+    caption: 'Community Matchmaking & Club Leagues',
+    replacementPath: '/hero-social.jpg',
+    src: 'https://images.unsplash.com/photo-1770230901556-4e1c0bacfb09?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+    alt: 'Smiling padel players celebrating a point at the net',
+    badge: '⚡ Mixed Doubles & Social Ladders',
+  },
+  {
+    id: 'court',
+    tag: '03 · Atmosphere',
+    title: 'Panoramic Floodlit Turf',
+    caption: '500-Lux LED Night Arenas Until 02:00 AM',
+    replacementPath: '/hero-court.jpg',
+    src: 'https://images.unsplash.com/photo-1767128890583-b3f8dc30bdbc?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+    alt: 'Panoramic floodlit padel court glowing green at night',
+    badge: '🔥 24/7 Floodlit Action',
+  },
+] as const;
+
 export function PakPadelPortalApp() {
   // Core View State: 'landing' | 'login' | 'dashboard_club' | 'dashboard_super'
   const [activeView, setActiveView] = useState<PortalView>('landing');
@@ -144,7 +184,8 @@ export function PakPadelPortalApp() {
 
   // Refs for "Click Outside to Close" behavior
   const citySelectorRef = useRef<HTMLDivElement>(null);
-  const mobileNavRef = useRef<HTMLDivElement>(null);
+  const mobileNavRef = useRef<HTMLElement>(null);
+  const mobileNavTriggerRef = useRef<HTMLButtonElement>(null);
   const clubProfilePopoverRef = useRef<HTMLDivElement>(null);
   const superProfilePopoverRef = useRef<HTMLDivElement>(null);
   const onboardCityDropdownRef = useRef<HTMLDivElement>(null);
@@ -161,7 +202,12 @@ export function PakPadelPortalApp() {
         setCitySelectorOpen(false);
       }
 
-      if (mobileNavRef.current && !mobileNavRef.current.contains(target)) {
+      if (
+        mobileNavRef.current &&
+        !mobileNavRef.current.contains(target) &&
+        (!mobileNavTriggerRef.current ||
+          !mobileNavTriggerRef.current.contains(target))
+      ) {
         setMobileNavOpen(false);
       }
 
@@ -195,6 +241,29 @@ export function PakPadelPortalApp() {
     };
   }, []);
 
+  // Lock body scroll and close on Escape key when mobile slide-over drawer is open
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    if (mobileNavOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && mobileNavOpen) {
+        setMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileNavOpen]);
+
   // Authentication Form State
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -216,7 +285,7 @@ export function PakPadelPortalApp() {
   const [cliftonBrandingSaved, setCliftonBrandingSaved] = useState<
     string | null
   >(null);
-  const [showFullClubScheduler, setShowFullClubScheduler] = useState(false);
+  const [showFullClubScheduler, setShowFullClubScheduler] = useState(true);
 
   // Super Admin Dashboard State (super@pakpadel.pk)
   const [partnerClubs, setPartnerClubs] = useState<PartnerClubRecord[]>(
@@ -354,7 +423,7 @@ export function PakPadelPortalApp() {
   if (activeView === 'landing') {
     return (
       <div
-        className={`min-h-screen scroll-smooth transition-colors duration-300 selection:bg-[#228B4E] selection:text-[#FFFFFF] ${
+        className={`min-h-screen w-full overflow-x-hidden scroll-smooth transition-colors duration-300 selection:bg-[#228B4E] selection:text-[#FFFFFF] ${
           isDarkMode
             ? 'bg-[#080F0A] text-[#F5FFF7]'
             : 'bg-[#F7FAF8] text-[#102117]'
@@ -362,7 +431,7 @@ export function PakPadelPortalApp() {
       >
         {/* Sticky Top Navbar — Pakistan Green (#01411C) with Official Brand Logo */}
         <header className="sticky top-0 z-40 border-b border-[#003014] bg-[#01411C]/95 backdrop-blur-md text-[#FFFFFF]">
-          <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-4 sm:gap-8 px-5 py-3.5 sm:px-8">
+          <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-3 sm:gap-8 px-4 py-3 sm:px-8 sm:py-3.5">
             {/* Zone 1: Official Brand Logo (<img> with h-8 md:h-10 w-auto object-contain) */}
             <a
               href="#top"
@@ -506,13 +575,15 @@ export function PakPadelPortalApp() {
                 <ArrowRight className="h-4 w-4 text-[#FFFFFF] transition-all duration-200 ease-in-out" />
               </button>
 
-              {/* Mobile Navigation Menu Trigger (< md) with Click Outside to Close */}
-              <div ref={mobileNavRef} className="relative md:hidden">
+              {/* Mobile Navigation Menu Trigger (< md) */}
+              <div className="relative md:hidden">
                 <button
+                  ref={mobileNavTriggerRef}
                   type="button"
                   onClick={() => setMobileNavOpen((prev) => !prev)}
                   aria-label="Toggle navigation menu"
                   aria-expanded={mobileNavOpen}
+                  aria-controls="pakpadel-mobile-drawer"
                   className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#228B4E]/40 bg-[#003014] text-[#FFFFFF] transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   {mobileNavOpen ? (
@@ -521,106 +592,245 @@ export function PakPadelPortalApp() {
                     <Menu className="h-5 w-5 transition-all duration-200 ease-in-out" />
                   )}
                 </button>
-
-                {mobileNavOpen && (
-                  <div
-                    className={`absolute right-0 mt-2 w-64 rounded-2xl border p-3 shadow-2xl z-50 space-y-1 transition-all duration-200 ease-in-out ${
-                      isDarkMode
-                        ? 'border-[#228B4E]/35 bg-[#101A13] text-[#F5FFF7]'
-                        : 'border-[#102117]/15 bg-[#FFFFFF] text-[#102117]'
-                    }`}
-                  >
-                    <a
-                      href="#features"
-                      onClick={() => setMobileNavOpen(false)}
-                      className={`block rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-200 ease-in-out ${
-                        isDarkMode
-                          ? 'hover:bg-[#18271C]'
-                          : 'hover:bg-[#D6EFE0]/50'
-                      }`}
-                    >
-                      Features
-                    </a>
-                    <a
-                      href="#for-clubs"
-                      onClick={() => setMobileNavOpen(false)}
-                      className={`block rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-200 ease-in-out ${
-                        isDarkMode
-                          ? 'hover:bg-[#18271C]'
-                          : 'hover:bg-[#D6EFE0]/50'
-                      }`}
-                    >
-                      For Clubs
-                    </a>
-                    <a
-                      href="#network"
-                      onClick={() => setMobileNavOpen(false)}
-                      className={`block rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-200 ease-in-out ${
-                        isDarkMode
-                          ? 'hover:bg-[#18271C]'
-                          : 'hover:bg-[#D6EFE0]/50'
-                      }`}
-                    >
-                      National Network ({selectedCity})
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsDarkMode((prev) => !prev);
-                        setMobileNavOpen(false);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all duration-200 ease-in-out ${
-                        isDarkMode
-                          ? 'hover:bg-[#18271C]'
-                          : 'hover:bg-[#D6EFE0]/50'
-                      }`}
-                    >
-                      <span>
-                        {isDarkMode
-                          ? 'Switch to Light Mode'
-                          : 'Switch to Dark Mode'}
-                      </span>
-                      {isDarkMode ? (
-                        <Sun className="h-3.5 w-3.5 text-[#228B4E]" />
-                      ) : (
-                        <Moon className="h-3.5 w-3.5 text-[#228B4E]" />
-                      )}
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Hero Section — Dark Surface (#080F0A) & Pakistan Green (#01411C) */}
+        {/* Kinetic Mobile Navigation Slide-Over Drawer + Full-Screen Gaussian Blur Backdrop (< md) */}
+        <div
+          aria-hidden={!mobileNavOpen}
+          className={`fixed inset-0 z-50 md:hidden ${
+            mobileNavOpen ? 'pointer-events-auto' : 'pointer-events-none'
+          }`}
+        >
+          {/* Full-screen backdrop overlay with heavy gaussian blur */}
+          <div
+            onClick={() => setMobileNavOpen(false)}
+            className={`fixed inset-0 backdrop-blur-md bg-black/75 transition-opacity duration-300 ${
+              mobileNavOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+
+          {/* Fixed Right Slide-Over Drawer (w-[85%] max-w-sm h-full) with dynamic spring easing */}
+          <aside
+            id="pakpadel-mobile-drawer"
+            ref={mobileNavRef}
+            aria-label="Mobile Navigation Drawer"
+            className={`fixed inset-y-0 right-0 z-50 flex h-full w-[85%] max-w-sm flex-col justify-between border-l border-[#293A2E] bg-gradient-to-b from-[#080F0A] via-[#101A13] to-[#080F0A] text-[#F5FFF7] shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              mobileNavOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            {/* Top Zone: Drawer Header + Interactive Nav Item Micro-Cards */}
+            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-6 space-y-6">
+              {/* Drawer Header: PakPadel logo badge + "Live in PK" pulsing status indicator + Close (X) button */}
+              <div className="flex items-center justify-between gap-2 border-b border-[#293A2E] pb-4">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoSrc}
+                    alt="PakPadel"
+                    referrerPolicy="no-referrer"
+                    className="h-8 w-auto object-contain rounded-lg bg-[#FFFFFF] p-0.5 shrink-0 shadow-xs"
+                  />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#228B4E]/45 bg-[#01411C]/80 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-[#F5FFF7]">
+                    <span className="h-2 w-2 rounded-full bg-[#228B4E] animate-pulse" />
+                    <span>Live in PK</span>
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(false)}
+                  aria-label="Close mobile navigation drawer"
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#293A2E] bg-[#101A13] text-[#F5FFF7] transition-all duration-200 hover:border-[#228B4E]/60 hover:bg-[#18271C] hover:text-[#228B4E]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Navigation Micro-Cards List */}
+              <nav aria-label="Mobile Primary Links" className="space-y-3">
+                {/* 1. Features (with Sparkles icon) */}
+                <a
+                  href="#features"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="group flex items-center justify-between gap-3 rounded-2xl bg-[#101A13] hover:bg-[#18271C] border border-[#293A2E] hover:border-[#228B4E]/50 p-3.5 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#228B4E]/35 bg-[#01411C]/70 text-[#228B4E] shadow-inner">
+                      <Sparkles className="h-4 w-4 text-[#228B4E]" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display text-sm font-bold text-[#F5FFF7]">
+                          Features
+                        </span>
+                        <span className="rounded-md bg-[#228B4E]/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#228B4E]">
+                          Raast Split
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#A7B8AB] truncate">
+                        15-sec court booking &amp; PPR matchmaking
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-[#228B4E] transition-transform duration-200 group-hover:translate-x-0.5" />
+                </a>
+
+                {/* 2. PakPadel for Clubs (with Building2 icon) */}
+                <a
+                  href="#for-clubs"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="group flex items-center justify-between gap-3 rounded-2xl bg-[#101A13] hover:bg-[#18271C] border border-[#293A2E] hover:border-[#228B4E]/50 p-3.5 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#228B4E]/35 bg-[#01411C]/70 text-[#228B4E] shadow-inner">
+                      <Building2 className="h-4 w-4 text-[#228B4E]" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display text-sm font-bold text-[#F5FFF7]">
+                          PakPadel for Clubs
+                        </span>
+                        <span className="rounded-md bg-[#228B4E]/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#228B4E]">
+                          B2B SaaS
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#A7B8AB] truncate">
+                        Playtomic-grade court matrix &amp; peak rules
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-[#228B4E] transition-transform duration-200 group-hover:translate-x-0.5" />
+                </a>
+
+                {/* 3. National Network (with Globe icon) */}
+                <a
+                  href="#network"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="group flex items-center justify-between gap-3 rounded-2xl bg-[#101A13] hover:bg-[#18271C] border border-[#293A2E] hover:border-[#228B4E]/50 p-3.5 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#228B4E]/35 bg-[#01411C]/70 text-[#228B4E] shadow-inner">
+                      <Globe className="h-4 w-4 text-[#228B4E]" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display text-sm font-bold text-[#F5FFF7]">
+                          National Network
+                        </span>
+                        <span className="rounded-md bg-[#228B4E]/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#228B4E]">
+                          {selectedCity}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#A7B8AB] truncate">
+                        39 partner clubs · 142 panoramic courts
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-[#228B4E] transition-transform duration-200 group-hover:translate-x-0.5" />
+                </a>
+
+                {/* 4. Theme Toggle Micro-Card */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDarkMode((prev) => !prev);
+                    setMobileNavOpen(false);
+                  }}
+                  className="group flex w-full items-center justify-between gap-3 rounded-2xl bg-[#101A13] hover:bg-[#18271C] border border-[#293A2E] hover:border-[#228B4E]/50 p-3.5 text-left transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#228B4E]/35 bg-[#01411C]/70 text-[#228B4E] shadow-inner">
+                      {isDarkMode ? (
+                        <Sun className="h-4 w-4 text-[#228B4E]" />
+                      ) : (
+                        <Moon className="h-4 w-4 text-[#228B4E]" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display text-sm font-bold text-[#F5FFF7]">
+                          Theme Toggle
+                        </span>
+                        <span className="rounded-md bg-[#228B4E]/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#228B4E]">
+                          {isDarkMode ? 'Dark' : 'Light'}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#A7B8AB] truncate">
+                        {isDarkMode
+                          ? 'Switch to Light Surface (#F7FAF8)'
+                          : 'Switch to Dark Canvas (#080F0A)'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-mono text-xs font-bold text-[#228B4E] shrink-0">
+                    Switch
+                  </span>
+                </button>
+              </nav>
+            </div>
+
+            {/* Drawer Footer: "Club Owner Portal" micro-callout + full-width tactile green button "Launch Partner Workspace" */}
+            <div className="border-t border-[#293A2E] bg-[#080F0A]/90 p-5 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#228B4E]">
+                    Club Owner Portal
+                  </span>
+                  <p className="text-xs text-[#A7B8AB]">
+                    Manage Clifton, Gulberg &amp; F-8 courts
+                  </p>
+                </div>
+                <ShieldCheck className="h-4 w-4 text-[#228B4E] shrink-0" />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  navigateToView('login');
+                }}
+                className="min-h-[48px] w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#01411C] border border-[#228B4E]/45 border-b-4 border-b-[#00280f] px-4 py-3 font-display text-xs sm:text-sm font-bold text-[#F5FFF7] shadow-lg transition-all duration-200 hover:bg-[#228B4E] hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap"
+              >
+                <span>Launch Partner Workspace</span>
+                <ArrowRight className="h-4 w-4 text-[#228B4E]" />
+              </button>
+            </div>
+          </aside>
+        </div>
+
+        {/* Hero Section — 3-Split Sports Lifestyle Visuals + Contrast-Shielded Copy + Responsive Bar/Box Booking Widget */}
         <section
           id="top"
-          className="relative overflow-hidden bg-[#080F0A] text-[#F5FFF7] pt-12 pb-16 sm:pt-16 sm:pb-24 border-b border-[#228B4E]/25"
+          className="relative overflow-hidden bg-[#080F0A] text-[#F5FFF7] pt-8 pb-12 sm:pt-14 sm:pb-20 border-b border-[#228B4E]/25"
         >
           {/* Ambient Pakistan Green radial highlight */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(1,65,28,0.55),transparent_65%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_25%,rgba(1,65,28,0.6),transparent_65%)]"
           />
 
-          <div className="relative z-10 mx-auto max-w-[1360px] px-5 sm:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
-              {/* Left Column: Core Value Proposition & Dual Store CTAs */}
-              <div className="lg:col-span-7 flex flex-col justify-between space-y-8">
-                <div className="space-y-6">
-                  <p className="text-xs sm:text-sm font-semibold text-[#228B4E] tracking-wide">
-                    Islamabad · Rawalpindi · Lahore · Karachi
-                  </p>
+          <div className="relative z-10 mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8 space-y-8 lg:space-y-12">
+            {/* Top Hero Container: flex flex-col lg:flex-row items-center gap-8 px-4 sm:px-6 */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 px-0 sm:px-2">
+              {/* Left Column (45% width on desktop): Wrapped in soft gradient for 100% text contrast & alignment */}
+              <div className="w-full lg:w-[45%] shrink-0 relative z-20 rounded-2xl bg-gradient-to-r from-[#080F0A] via-[#080F0A]/90 to-transparent p-1 sm:p-2 flex flex-col justify-between space-y-6 text-center lg:text-left">
+                <div className="space-y-4 sm:space-y-5">
+                  <div className="inline-flex items-center gap-2 rounded-lg border border-[#228B4E]/35 bg-[#101A13]/90 px-3 py-1.5 text-xs sm:text-sm font-semibold text-[#228B4E] tracking-wide mx-auto lg:mx-0">
+                    <span className="h-2 w-2 rounded-full bg-[#228B4E] shrink-0" />
+                    <span>Islamabad · Rawalpindi · Lahore · Karachi</span>
+                  </div>
 
                   <h1
-                    className="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold tracking-tight text-[#F5FFF7] leading-[1.08]"
+                    className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight font-black text-center lg:text-left tracking-tight text-[#F5FFF7]"
                     style={{ textWrap: 'balance' }}
                   >
                     Pakistan&apos;s Premier Padel Network.
                   </h1>
 
-                  <p className="max-w-xl text-base sm:text-lg text-[#F5FFF7]/85 leading-relaxed">
+                  <p className="max-w-xl mx-auto lg:mx-0 text-sm sm:text-base lg:text-lg text-[#F5FFF7]/85 leading-relaxed text-center lg:text-left">
                     Book courts instantly, find matches, and manage club
                     operations effortlessly. Connected real-time court
                     scheduling and split payments built for Pakistan&apos;s
@@ -628,32 +838,64 @@ export function PakPadelPortalApp() {
                   </p>
                 </div>
 
-                {/* Dual Call-to-Actions: App Store (Primary #01411C) & Google Play (Accent #228B4E) */}
-                <div className="space-y-5 pt-2">
-                  <div className="flex flex-wrap items-center gap-4">
-                    {/* Download on the App Store Button — Primary 3D Tactile Button */}
+                {/* Mobile 3-Split Image Grid: Positioned prominently between headline copy and booking preview card on mobile (< lg) */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mx-auto my-6 lg:hidden">
+                  {HERO_LIFESTYLE_PANELS.map((panel) => (
+                    <div
+                      key={`mobile-card-${panel.id}`}
+                      data-replacement-src={panel.replacementPath}
+                      className="aspect-[3/4] rounded-xl overflow-hidden border border-[#228B4E]/40 shadow-md relative bg-[#101A13]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={panel.src}
+                        alt={panel.alt}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover object-center transition-transform duration-200 ease-out hover:scale-105"
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080F0A]/55 via-transparent to-[#01411C]/25"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Dual Call-to-Actions: App Store & Google Play — Tactile 3D Pakistan Green (#01411C) with Official Embedded SVG Vectors */}
+                <div className="space-y-4 pt-1 w-full">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 w-full sm:w-auto">
+                    {/* Download on the App Store Button — Official Apple Monochrome White SVG */}
                     <button
                       type="button"
                       onClick={() =>
                         setStoreDownloadBanner(
-                          'PakPadel iOS App (v4.2) — Instant Apple Pay, Raast & Matchmaking enabled. Scan QR or test live booking on the right.'
+                          'PakPadel iOS App (v4.2) — Instant Apple Pay, Raast & Matchmaking enabled. Scan QR or test live booking below.'
                         )
                       }
                       aria-label="Download on the App Store"
-                      className="group min-h-[56px] inline-flex items-center gap-3.5 rounded-xl bg-[#01411C] border border-[#228B4E]/40 border-b-4 border-b-[#003014] px-5 py-3 text-left text-[#FFFFFF] transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap shrink-0"
+                      className="group min-h-[54px] inline-flex items-center justify-center sm:justify-start gap-3.5 rounded-xl bg-[#01411C] border border-[#228B4E]/40 border-b-4 border-b-[#00280f] px-5 py-3 text-left text-white shadow-md transition-all duration-150 ease-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap shrink-0"
                     >
-                      <Smartphone className="h-6 w-6 text-[#228B4E] shrink-0 transition-all duration-200 ease-in-out group-hover:scale-105" />
+                      <svg
+                        viewBox="0 0 384 512"
+                        aria-hidden="true"
+                        className="h-6 w-6 fill-white text-white shrink-0 transition-transform duration-150 ease-out group-hover:scale-110"
+                      >
+                        <path
+                          fill="#FFFFFF"
+                          d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+                        />
+                      </svg>
                       <div>
-                        <span className="block text-[10px] font-semibold leading-none text-[#FFFFFF]/80">
+                        <span className="block text-[10px] uppercase tracking-wider leading-none text-[#A7B8AB]">
                           Download on the
                         </span>
-                        <span className="mt-1 block font-display text-sm sm:text-base font-bold leading-none text-[#FFFFFF]">
+                        <span className="mt-1 block font-display text-sm font-bold leading-none text-white">
                           App Store
                         </span>
                       </div>
                     </button>
 
-                    {/* Get it on Google Play Button — Accent/Secondary 3D Tactile Button */}
+                    {/* Get it on Google Play Button — Authentic 4-Color Polygon Badge SVG */}
                     <button
                       type="button"
                       onClick={() =>
@@ -662,14 +904,35 @@ export function PakPadelPortalApp() {
                         )
                       }
                       aria-label="Get it on Google Play"
-                      className="group min-h-[56px] inline-flex items-center gap-3.5 rounded-xl bg-[#228B4E] border-b-4 border-[#003014] px-5 py-3 text-left text-[#FFFFFF] transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap shrink-0"
+                      className="group min-h-[54px] inline-flex items-center justify-center sm:justify-start gap-3.5 rounded-xl bg-[#01411C] border border-[#228B4E]/40 border-b-4 border-b-[#00280f] px-5 py-3 text-left text-white shadow-md transition-all duration-150 ease-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap shrink-0"
                     >
-                      <Globe className="h-6 w-6 text-[#FFFFFF] shrink-0 transition-all duration-200 ease-in-out group-hover:scale-105" />
+                      <svg
+                        viewBox="0 0 48 48"
+                        aria-hidden="true"
+                        className="h-6 w-6 shrink-0 transition-transform duration-150 ease-out group-hover:scale-110"
+                      >
+                        <path
+                          fill="#00D2FF"
+                          d="M7.3 4.8C6.5 5.6 6 6.9 6 8.6v30.8c0 1.7.5 3 1.3 3.8l.2.2L26.2 24v-.4L7.5 4.6l-.2.2z"
+                        />
+                        <path
+                          fill="#00F076"
+                          d="M32.5 17.7L7.5 3.6C6 2.7 4.7 2.8 3.8 3.7l22.4 20.3 6.3-6.3z"
+                        />
+                        <path
+                          fill="#FF3A44"
+                          d="M7.5 44.4l25-14.1-6.3-6.3L3.8 44.3c.9.9 2.2 1 3.7.1z"
+                        />
+                        <path
+                          fill="#FFCE00"
+                          d="M41.4 21.8l-8.9-5-6.5 6.6 6.5 6.6 9-5.1c1.6-.9 1.6-2.2-.1-3.1z"
+                        />
+                      </svg>
                       <div>
-                        <span className="block text-[10px] font-semibold leading-none text-[#FFFFFF]/85">
-                          Get it on
+                        <span className="block text-[10px] uppercase tracking-wider leading-none text-[#A7B8AB]">
+                          GET IT ON
                         </span>
-                        <span className="mt-1 block font-display text-sm sm:text-base font-bold leading-none text-[#FFFFFF]">
+                        <span className="mt-1 block font-display text-sm font-bold leading-none text-white">
                           Google Play
                         </span>
                       </div>
@@ -679,21 +942,21 @@ export function PakPadelPortalApp() {
                   {storeDownloadBanner && (
                     <div
                       role="status"
-                      className="flex items-center justify-between gap-3 rounded-xl border border-[#228B4E]/45 bg-[#101A13] px-4 py-3 text-xs text-[#F5FFF7] transition-all duration-200 ease-in-out"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-[#228B4E]/45 bg-[#101A13] px-4 py-3 text-xs text-[#F5FFF7] transition-all duration-150 ease-out text-left"
                     >
                       <span>{storeDownloadBanner}</span>
                       <button
                         type="button"
                         onClick={() => setStoreDownloadBanner(null)}
-                        className="rounded-md px-2 py-1 font-semibold text-[#228B4E] transition-all duration-200 ease-in-out hover:bg-[#18271C] whitespace-nowrap shrink-0"
+                        className="rounded-md px-2 py-1 font-semibold text-[#228B4E] transition-all duration-150 ease-out hover:bg-[#18271C] whitespace-nowrap shrink-0"
                       >
                         Dismiss
                       </button>
                     </div>
                   )}
 
-                  {/* Unboxed Metadata Proof Line */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#F5FFF7]/75 pt-1">
+                  {/* Active Club Counters Proof Line */}
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs text-[#F5FFF7]/80 pt-1">
                     <span className="font-mono font-semibold text-[#228B4E] tabular-nums">
                       39 Partner Clubs
                     </span>
@@ -702,202 +965,249 @@ export function PakPadelPortalApp() {
                       142 Panoramic Courts
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>Instant Raast & Card Split Checkout</span>
+                    <span>Instant Raast &amp; Card Split Checkout</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Interactive Live Court Availability Showcase Card (#101A13 dSurface1) */}
-              <div className="lg:col-span-5 flex flex-col">
-                <div className="relative flex-1 flex flex-col justify-between rounded-2xl border border-[#228B4E]/30 bg-[#101A13] p-5 sm:p-6 shadow-xl transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-lg">
-                  {/* Top Visual Preview Banner: Architectural Padel Court Diagram */}
-                  <div className="relative h-48 sm:h-52 w-full overflow-hidden rounded-xl border border-[#228B4E]/25 bg-[#080F0A] p-4 flex flex-col justify-between">
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(34,139,78,0.24),transparent_70%)]"
-                    />
+              {/* Right Column (55% width on desktop): 3-Split Sports Lifestyle Visual Panels Tilted Right */}
+              <div className="hidden lg:block lg:w-[55%] relative z-10 pr-2">
+                {/* Ambient emerald backlight behind tilted panels */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-4 rounded-3xl bg-[radial-gradient(circle_at_50%_50%,rgba(34,139,78,0.28),transparent_70%)] blur-xl"
+                />
 
-                    {/* Top Court Header */}
-                    <div className="relative z-10 flex items-center justify-between text-[11px] text-[#F5FFF7]/80">
-                      <span className="font-mono text-[#228B4E] font-semibold">
-                        FIP 20m × 10m Pakistan Green Turf
-                      </span>
-                      <span className="font-mono tabular-nums">
-                        LED 500-Lux Active
-                      </span>
-                    </div>
+                {/* 3-Column Angled/Tilted Right Grid (-skew-x-6 + rotate-2) */}
+                <div className="relative grid grid-cols-3 gap-4 px-2 py-3">
+                  {HERO_LIFESTYLE_PANELS.map((panel, index) => {
+                    const staggerClass =
+                      index === 0
+                        ? 'translate-y-3'
+                        : index === 1
+                          ? '-translate-y-3'
+                          : 'translate-y-1';
 
-                    {/* Architectural Top-Down Padel Court SVG */}
-                    <div className="relative z-10 my-auto flex items-center justify-center">
-                      <svg
-                        viewBox="0 0 320 110"
-                        className="h-24 w-full max-w-[300px]"
-                        role="img"
-                        aria-label="Top-down Padel Court schematic with active players"
+                    return (
+                      <div
+                        key={panel.id}
+                        data-replacement-src={panel.replacementPath}
+                        className={`group relative h-[380px] xl:h-[410px] overflow-hidden rounded-2xl border border-[#228B4E]/35 bg-[#101A13] shadow-[0_20px_45px_rgba(5,11,7,0.85)] -skew-x-6 rotate-2 ${staggerClass} transition-all duration-150 ease-out hover:-translate-y-2 hover:border-[#228B4E] hover:shadow-[0_24px_55px_rgba(1,65,28,0.65)]`}
                       >
-                        <rect
-                          x="8"
-                          y="6"
-                          width="304"
-                          height="98"
-                          rx="6"
-                          fill="#01411C"
-                          stroke="#228B4E"
-                          strokeWidth="2"
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={panel.src}
+                          alt={panel.alt}
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full scale-110 object-cover object-center transition-transform duration-200 ease-out group-hover:scale-120"
                         />
-                        <line
-                          x1="68"
-                          y1="6"
-                          x2="68"
-                          y2="104"
-                          stroke="#F5FFF7"
-                          strokeOpacity="0.45"
-                          strokeWidth="1.5"
-                        />
-                        <line
-                          x1="252"
-                          y1="6"
-                          x2="252"
-                          y2="104"
-                          stroke="#F5FFF7"
-                          strokeOpacity="0.45"
-                          strokeWidth="1.5"
-                        />
-                        <line
-                          x1="68"
-                          y1="55"
-                          x2="252"
-                          y2="55"
-                          stroke="#F5FFF7"
-                          strokeOpacity="0.45"
-                          strokeWidth="1.5"
-                        />
-                        <line
-                          x1="160"
-                          y1="2"
-                          x2="160"
-                          y2="108"
-                          stroke="#228B4E"
-                          strokeWidth="2.5"
-                          strokeDasharray="4 3"
-                        />
-                        <circle cx="105" cy="32" r="6" fill="#228B4E" />
-                        <circle cx="105" cy="78" r="6" fill="#228B4E" />
-                        <circle cx="215" cy="32" r="6" fill="#F5FFF7" />
-                        <circle cx="215" cy="78" r="6" fill="#F5FFF7" />
-                      </svg>
-                    </div>
 
-                    {/* Bottom Court Caption */}
-                    <div className="relative z-10 flex items-end justify-between gap-2">
-                      <div>
-                        <p className="text-[11px] font-semibold text-[#228B4E]">
-                          Tonight&apos;s Prime Evening Window
-                        </p>
-                        <p className="font-display text-base font-bold text-[#F5FFF7]">
-                          Live Court Availability
-                        </p>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-[#01411C]/25 mix-blend-overlay transition-opacity duration-150 ease-out group-hover:opacity-10"
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080F0A]/55 via-transparent to-[#01411C]/35 transition-opacity duration-150 ease-out group-hover:opacity-40"
+                        />
                       </div>
-                      <span className="font-mono text-xs font-semibold text-[#228B4E] tabular-nums">
-                        60 / 90 Mins
-                      </span>
-                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Re-Engineered Live Court Availability Widget:
+                - Mobile (< lg): Horizontal scrollable slot strip inside compact card
+                - Desktop (lg+): Horizontal Docked Command Bar */}
+            <div className="relative z-30 rounded-2xl border border-[#228B4E]/35 bg-[#101A13]/95 backdrop-blur-md p-4 sm:p-5 lg:px-6 lg:py-4 shadow-[0_20px_50px_rgba(5,11,7,0.85)] transition-all duration-150 ease-out hover:border-[#228B4E]/60">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-5">
+                {/* Segment 1: Live Court Diagram & Title Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 lg:w-[290px] xl:w-[320px] shrink-0 border-b border-[#F5FFF7]/10 pb-3.5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
+                  {/* Compact Top-Down Padel Court Schematic */}
+                  <div className="relative h-16 w-full sm:w-28 shrink-0 overflow-hidden rounded-xl border border-[#228B4E]/30 bg-[#080F0A] p-2 flex items-center justify-center">
+                    <svg
+                      viewBox="0 0 320 110"
+                      className="h-11 w-full"
+                      role="img"
+                      aria-label="Top-down Padel Court schematic with active players"
+                    >
+                      <rect
+                        x="8"
+                        y="6"
+                        width="304"
+                        height="98"
+                        rx="6"
+                        fill="#01411C"
+                        stroke="#228B4E"
+                        strokeWidth="3"
+                      />
+                      <line
+                        x1="68"
+                        y1="6"
+                        x2="68"
+                        y2="104"
+                        stroke="#F5FFF7"
+                        strokeOpacity="0.45"
+                        strokeWidth="2"
+                      />
+                      <line
+                        x1="252"
+                        y1="6"
+                        x2="252"
+                        y2="104"
+                        stroke="#F5FFF7"
+                        strokeOpacity="0.45"
+                        strokeWidth="2"
+                      />
+                      <line
+                        x1="68"
+                        y1="55"
+                        x2="252"
+                        y2="55"
+                        stroke="#F5FFF7"
+                        strokeOpacity="0.45"
+                        strokeWidth="2"
+                      />
+                      <line
+                        x1="160"
+                        y1="2"
+                        x2="160"
+                        y2="108"
+                        stroke="#228B4E"
+                        strokeWidth="3"
+                        strokeDasharray="4 3"
+                      />
+                      <circle cx="105" cy="32" r="7" fill="#228B4E" />
+                      <circle cx="105" cy="78" r="7" fill="#228B4E" />
+                      <circle cx="215" cy="32" r="7" fill="#F5FFF7" />
+                      <circle cx="215" cy="78" r="7" fill="#F5FFF7" />
+                    </svg>
                   </div>
 
-                  {/* Interactive Quick Slot Selector */}
-                  <div className="mt-5 space-y-3">
-                    <div className="flex items-center justify-between text-xs text-[#F5FFF7]/80">
-                      <span>
-                        Select a live evening slot to preview instant booking
-                      </span>
-                      <span className="font-mono text-[#228B4E] tabular-nums">
-                        PKT (UTC+5)
-                      </span>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-[#228B4E]" />
+                      <p className="text-[11px] font-semibold text-[#228B4E]">
+                        Tonight&apos;s Prime Evening Window
+                      </p>
                     </div>
+                    <p className="font-display text-base font-bold text-[#F5FFF7]">
+                      Live Court Availability
+                    </p>
+                    <p className="font-mono text-[11px] text-[#F5FFF7]/70 tabular-nums">
+                      60 / 90 Mins · PKT (UTC+5)
+                    </p>
+                  </div>
+                </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {QUICK_BOOKING_SLOTS.map((slot, idx) => {
-                        const isSelected = selectedSlotIndex === idx;
-                        return (
-                          <button
-                            key={slot.time}
-                            type="button"
-                            onClick={() => {
-                              setSelectedSlotIndex(idx);
-                              setInstantBookedSlot(null);
-                            }}
-                            className={`rounded-xl border p-3 text-left transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#228B4E] ${
-                              isSelected
-                                ? 'border-[#228B4E] bg-[#01411C] text-[#FFFFFF]'
-                                : 'border-[#F5FFF7]/12 bg-[#080F0A] text-[#F5FFF7]/85 hover:border-[#228B4E]/60 hover:bg-[#18271C]'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={`font-mono text-xs font-bold tabular-nums ${
-                                  isSelected
-                                    ? 'text-[#FFFFFF]'
-                                    : 'text-[#228B4E]'
-                                }`}
-                              >
-                                {slot.time}
-                              </span>
-                              <span className="font-mono text-[11px] text-[#FFFFFF]/90 tabular-nums">
-                                {slot.rate}
-                              </span>
-                            </div>
-                            <p className="mt-1 text-xs font-semibold text-[#FFFFFF] truncate">
-                              {slot.court}
-                            </p>
-                            <p className="mt-0.5 text-[11px] text-[#F5FFF7]/70">
-                              {slot.spots}
-                            </p>
-                          </button>
-                        );
-                      })}
-                    </div>
+                {/* Segment 2: Interactive Quick Slot Selector (Horizontal Scroll Row on Mobile, 4-Column Bar on Desktop) */}
+                <div className="flex-1 min-w-0">
+                  <div className="mb-2 flex items-center justify-between text-xs text-[#F5FFF7]/80 lg:hidden">
+                    <span className="truncate pr-2">
+                      Swipe &amp; select a live evening slot
+                    </span>
+                    <span className="font-mono text-[#228B4E] tabular-nums shrink-0">
+                      PKT (UTC+5)
+                    </span>
                   </div>
 
-                  {/* Bottom Action Row */}
-                  <div className="mt-5 pt-4 border-t border-[#F5FFF7]/10 flex flex-wrap items-center justify-between gap-3">
+                  <div className="overflow-x-auto pb-2 scrollbar-none flex gap-2 lg:grid lg:grid-cols-4 lg:gap-2.5 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {QUICK_BOOKING_SLOTS.map((slot, idx) => {
+                      const isSelected = selectedSlotIndex === idx;
+                      return (
+                        <button
+                          key={slot.time}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSlotIndex(idx);
+                            setInstantBookedSlot(null);
+                          }}
+                          className={`min-w-[168px] sm:min-w-[185px] lg:min-w-0 shrink-0 rounded-xl border px-3.5 py-2.5 text-left transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#228B4E] ${
+                            isSelected
+                              ? 'border-[#228B4E] bg-[#01411C] text-[#FFFFFF] shadow-md'
+                              : 'border-[#F5FFF7]/12 bg-[#080F0A] text-[#F5FFF7]/85 hover:border-[#228B4E]/60 hover:bg-[#18271C]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span
+                              className={`font-mono text-xs font-bold tabular-nums ${
+                                isSelected ? 'text-[#FFFFFF]' : 'text-[#228B4E]'
+                              }`}
+                            >
+                              {slot.time}
+                            </span>
+                            <span className="font-mono text-[11px] text-[#FFFFFF]/90 tabular-nums">
+                              {slot.rate}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs font-semibold text-[#FFFFFF] truncate">
+                            {slot.court}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-[#D6EFE0]/75">
+                            {slot.spots}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Segment 3: Selected Slot Readout & Reserve Action Button */}
+                <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-[#F5FFF7]/10 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5 shrink-0">
+                  <div className="text-left lg:text-right xl:text-left">
                     {instantBookedSlot ? (
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[#228B4E]">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#228B4E]">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
-                        <span>Reserved {instantBookedSlot}</span>
+                        <span className="max-w-[190px] truncate">
+                          Reserved {instantBookedSlot}
+                        </span>
                       </div>
                     ) : (
-                      <div className="text-xs text-[#F5FFF7]/80">
-                        Selected:{' '}
-                        <span className="font-semibold text-[#F5FFF7]">
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-wider text-[#F5FFF7]/60">
+                          Selected Court
+                        </span>
+                        <span className="block text-xs font-semibold text-[#F5FFF7] max-w-[180px] truncate">
                           {QUICK_BOOKING_SLOTS[selectedSlotIndex].court}
                         </span>
                       </div>
                     )}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setInstantBookedSlot(
-                          `${QUICK_BOOKING_SLOTS[selectedSlotIndex].court} at ${QUICK_BOOKING_SLOTS[selectedSlotIndex].time}`
-                        )
-                      }
-                      className="min-h-[40px] inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#228B4E] border-b-4 border-[#003014] px-4 py-2 text-xs font-bold text-[#FFFFFF] transition-all duration-200 ease-in-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap shrink-0"
-                    >
-                      <span>Reserve Slot Now</span>
-                      <ArrowRight className="h-3.5 w-3.5 transition-all duration-200 ease-in-out" />
-                    </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setInstantBookedSlot(
+                        `${QUICK_BOOKING_SLOTS[selectedSlotIndex].court} at ${QUICK_BOOKING_SLOTS[selectedSlotIndex].time}`
+                      )
+                    }
+                    className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#228B4E] border-b-4 border-[#003014] px-5 py-2.5 text-xs font-bold text-[#FFFFFF] transition-all duration-150 ease-out hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#228B4E] whitespace-nowrap shrink-0"
+                  >
+                    <span>Reserve Slot Now</span>
+                    <ArrowRight className="h-3.5 w-3.5 transition-all duration-150 ease-out" />
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Product Details — Asymmetric Bento Grid Section */}
-        <section
-          id="features"
-          className="mx-auto max-w-[1360px] px-5 py-16 sm:px-8 sm:py-24 space-y-12"
+        {/* Community & Matchmaking Section ("The Padel Match Engine") */}
+        <PadelCommunitySection isDarkMode={isDarkMode} />
+
+        {/* 4 Commercial Playtomic-Standard Sections + Enterprise Dark Footer */}
+        <PakPadelCommercialSections
+          isDarkMode={isDarkMode}
+          logoSrc={logoSrc}
+          onNavigateToLogin={() => navigateToView('login')}
+          onSelectNetworkCity={(city) => setSelectedCity(city)}
         >
+          {/* Product Details — Asymmetric Bento Grid Section */}
+          <section
+            id="features"
+            className="mx-auto max-w-[1360px] px-5 py-16 sm:px-8 sm:py-24 space-y-12"
+          >
           <div
             className={`flex flex-col md:flex-row md:items-end justify-between gap-6 border-b pb-6 ${
               isDarkMode ? 'border-[#F5FFF7]/12' : 'border-[#102117]/12'
@@ -1208,33 +1518,8 @@ export function PakPadelPortalApp() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Quiet Footer with Official Brand Logo */}
-        <footer className="border-t border-[#003014] bg-[#01411C] text-[#FFFFFF] py-10">
-          <div className="mx-auto max-w-[1360px] px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logoSrc}
-                alt="PakPadel"
-                referrerPolicy="no-referrer"
-                className="h-8 md:h-10 w-auto object-contain rounded-lg bg-[#FFFFFF] p-0.5 transition-all duration-200 ease-in-out"
-              />
-              <span>Pakistan&apos;s Premier Padel Network</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-6">
-              <span>Islamabad · Rawalpindi · Lahore · Karachi</span>
-              <button
-                type="button"
-                onClick={() => navigateToView('login')}
-                className="rounded-lg px-3 py-1.5 font-semibold text-[#FFFFFF] underline decoration-[#228B4E] underline-offset-4 transition-all duration-200 ease-in-out hover:bg-[#18271C] hover:text-[#F5FFF7] whitespace-nowrap"
-              >
-                Partner Login Portal
-              </button>
-            </div>
-          </div>
-        </footer>
+          </section>
+        </PakPadelCommercialSections>
       </div>
     );
   }
@@ -1244,7 +1529,7 @@ export function PakPadelPortalApp() {
   // ============================================================================
   if (activeView === 'login') {
     return (
-      <div className="min-h-screen bg-[#080F0A] text-[#F5FFF7] flex flex-col justify-between p-5 sm:p-8 selection:bg-[#228B4E] selection:text-[#FFFFFF] transition-opacity duration-500">
+      <div className="min-h-screen w-full overflow-x-hidden bg-[#080F0A] text-[#F5FFF7] flex flex-col justify-between p-4 sm:p-8 selection:bg-[#228B4E] selection:text-[#FFFFFF] transition-opacity duration-500">
         {/* Top Bar with Back to Landing button & Official Brand Logo */}
         <div className="mx-auto w-full max-w-[1200px] flex items-center justify-between">
           <button
@@ -1515,10 +1800,72 @@ export function PakPadelPortalApp() {
   // ============================================================================
   if (activeView === 'dashboard_club') {
     return (
-      <div className="min-h-screen bg-[#F7FAF8] text-[#102117] transition-opacity duration-500">
+      <div className="min-h-screen w-full overflow-x-hidden bg-[#F7FAF8] text-[#102117] transition-opacity duration-500">
         {/* Club Admin Top Navigation Bar — Pakistan Green (#01411C) with #FFFFFF text */}
-        <header className="sticky top-0 z-40 border-b border-[#003014] bg-[#01411C] text-[#FFFFFF]">
-          <div className="mx-auto flex max-w-[1360px] flex-wrap items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
+        <header
+          ref={clubProfilePopoverRef}
+          className="sticky top-0 z-40 border-b border-[#003014] bg-[#01411C] text-[#FFFFFF]"
+        >
+          {/* Mobile (< sm): Compact single-line horizontal bar (h-12 flex items-center justify-between px-3) */}
+          <div className="h-12 flex sm:hidden items-center justify-between px-3 gap-2">
+            {/* Left side: Logo icon + concise truncated label with tooltip */}
+            <div
+              className="flex items-center gap-2 min-w-0"
+              title="Karachi Clifton Courts · Authenticated: admin@clifton.pk · Club Admin Role"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoSrc}
+                alt="PakPadel"
+                referrerPolicy="no-referrer"
+                className="h-7 w-auto object-contain rounded-md bg-[#FFFFFF] p-0.5 shrink-0"
+              />
+              <span className="font-display text-xs font-bold text-[#FFFFFF] truncate">
+                Clifton Admin
+              </span>
+            </div>
+
+            {/* Right side: Compact icon buttons + sleek mobile dropdown menu (occupies <= 44px height) */}
+            <div className="flex items-center gap-1.5 shrink-0 relative">
+              <button
+                type="button"
+                onClick={() => setShowFullClubScheduler((prev) => !prev)}
+                className="h-8 rounded-lg border border-[#FFFFFF]/25 bg-[#003014] px-2.5 text-[11px] font-bold text-[#FFFFFF] whitespace-nowrap"
+              >
+                {showFullClubScheduler ? 'Summary' : 'Scheduler'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigateToView('login')}
+                title="Switch Role / Sign Out"
+                aria-label="Switch Role / Sign Out"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#228B4E] text-[#FFFFFF]"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setClubProfilePopoverOpen((prev) => !prev)}
+                aria-expanded={clubProfilePopoverOpen}
+                aria-haspopup="menu"
+                aria-label="Account & Navigation Menu"
+                className="inline-flex h-8 items-center gap-1 rounded-lg border border-[#FFFFFF]/25 bg-[#003014]/80 px-2 text-[11px] font-bold text-[#FFFFFF]"
+              >
+                <UserCheck className="h-3.5 w-3.5 text-[#228B4E]" />
+                <span>Account</span>
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform duration-200 ${
+                    clubProfilePopoverOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop (>= sm): Full horizontal layout */}
+          <div className="hidden sm:flex mx-auto max-w-[1360px] flex-wrap items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
             <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -1548,71 +1895,21 @@ export function PakPadelPortalApp() {
                   : 'Open Full Booking Matrix & Scheduler'}
               </button>
 
-              {/* User Profile Popover with "Click Outside to Close" */}
-              <div ref={clubProfilePopoverRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setClubProfilePopoverOpen((prev) => !prev)}
-                  aria-expanded={clubProfilePopoverOpen}
-                  aria-haspopup="menu"
-                  className="min-h-[40px] inline-flex items-center gap-2 rounded-xl border border-[#FFFFFF]/25 bg-[#003014]/70 px-3.5 py-2 text-xs font-bold text-[#FFFFFF] transition-all duration-200 ease-in-out hover:bg-[#18271C] whitespace-nowrap"
-                >
-                  <UserCheck className="h-3.5 w-3.5 text-[#228B4E]" />
-                  <span>Clifton Account</span>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 transition-all duration-200 ease-in-out ${
-                      clubProfilePopoverOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {clubProfilePopoverOpen && (
-                  <div
-                    role="menu"
-                    className="absolute right-0 mt-2 w-64 rounded-2xl border border-[#102117]/15 bg-[#FFFFFF] p-2 text-[#102117] shadow-2xl z-50 space-y-1 transition-all duration-200 ease-in-out"
-                  >
-                    <div className="px-3 py-2 border-b border-[#102117]/10">
-                      <p className="font-display text-xs font-bold text-[#102117]">
-                        Karachi Clifton Courts
-                      </p>
-                      <p className="font-mono text-[11px] text-[#228B4E]">
-                        admin@clifton.pk
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setShowFullClubScheduler(false);
-                        setClubProfilePopoverOpen(false);
-                      }}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                    >
-                      <span>Clifton Courts & Branding</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setShowFullClubScheduler(true);
-                        setClubProfilePopoverOpen(false);
-                      }}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                    >
-                      <span>Playtomic Booking Matrix</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => navigateToView('dashboard_super')}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#01411C] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                    >
-                      <span>Switch to Super Admin HQ</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-[#228B4E]" />
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                type="button"
+                onClick={() => setClubProfilePopoverOpen((prev) => !prev)}
+                aria-expanded={clubProfilePopoverOpen}
+                aria-haspopup="menu"
+                className="min-h-[40px] inline-flex items-center gap-2 rounded-xl border border-[#FFFFFF]/25 bg-[#003014]/70 px-3.5 py-2 text-xs font-bold text-[#FFFFFF] transition-all duration-200 ease-in-out hover:bg-[#18271C] whitespace-nowrap"
+              >
+                <UserCheck className="h-3.5 w-3.5 text-[#228B4E]" />
+                <span>Clifton Account</span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-all duration-200 ease-in-out ${
+                    clubProfilePopoverOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
 
               <button
                 type="button"
@@ -1631,26 +1928,234 @@ export function PakPadelPortalApp() {
               </button>
             </div>
           </div>
+
+          {/* Shared Mobile & Desktop Account Popover Menu */}
+          {clubProfilePopoverOpen && (
+            <div className="mx-auto max-w-[1360px] relative px-3 sm:px-8">
+              <div
+                role="menu"
+                className="absolute right-3 sm:right-8 mt-1.5 w-64 rounded-2xl border border-[#102117]/15 bg-[#FFFFFF] p-2 text-[#102117] shadow-2xl z-50 space-y-1 transition-all duration-200 ease-in-out"
+              >
+                <div className="px-3 py-2 border-b border-[#102117]/10">
+                  <p className="font-display text-xs font-bold text-[#102117]">
+                    Karachi Clifton Courts
+                  </p>
+                  <p className="font-mono text-[11px] text-[#228B4E]">
+                    admin@clifton.pk
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setShowFullClubScheduler(false);
+                    setClubProfilePopoverOpen(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                >
+                  <span>Clifton Courts &amp; Branding</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setShowFullClubScheduler(true);
+                    setClubProfilePopoverOpen(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                >
+                  <span>Playtomic Booking Matrix</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateToView('dashboard_super')}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#01411C] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                >
+                  <span>Switch to Super Admin HQ</span>
+                  <ArrowRight className="h-3.5 w-3.5 text-[#228B4E]" />
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateToView('landing')}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+                >
+                  <span>Landing Page</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateToView('login')}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-700 transition-all duration-200 ease-in-out hover:bg-red-50"
+                >
+                  <span>Switch Role / Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </header>
 
         {showFullClubScheduler ? (
           <PakPadelDashboard />
         ) : (
-          <main className="mx-auto max-w-[1360px] px-5 py-8 sm:px-8 space-y-8">
+          <main className="mx-auto max-w-[1360px] px-4 py-6 sm:px-8 sm:py-8 space-y-6 sm:space-y-8">
             {/* Required Welcome Banner (#01411C with #FFFFFF text) */}
-            <div className="rounded-2xl border border-[#003014] bg-[#01411C] text-[#FFFFFF] p-6 sm:p-8 shadow-lg transition-all duration-200 ease-in-out">
+            <div className="rounded-2xl border border-[#003014] bg-[#01411C] text-[#FFFFFF] p-5 sm:p-8 shadow-lg transition-all duration-200 ease-in-out">
               <p className="text-xs font-semibold text-[#FFFFFF]/85">
                 Club Admin Portal · Clifton Block 4, Karachi
               </p>
-              <h1 className="mt-1 font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#FFFFFF]">
+              <h1 className="mt-1 font-display text-xl sm:text-3xl font-bold tracking-tight text-[#FFFFFF]">
                 Welcome Karachi Clifton Courts Manager - Manage Courts, Branding, and Timings
               </h1>
-              <p className="mt-2 max-w-3xl text-sm text-[#FFFFFF]/90">
+              <p className="mt-2 max-w-3xl text-xs sm:text-sm text-[#FFFFFF]/90">
                 Real-time control over your 4 Clifton panoramic courts, base and
                 floodlit peak-hour PKR pricing, and public club profile on the
                 PakPadel player app.
               </p>
             </div>
+
+            {/* 4 Top KPI Metric Cards — Pakistan Green Gradient & Glassmorphic Icon Boxes */}
+            <section
+              aria-label="Club operational metrics"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5"
+            >
+              {/* KPI Card 1: Active Club Members */}
+              <div className="relative overflow-hidden rounded-2xl border border-[#228B4E]/30 hover:border-[#228B4E] bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                      Active Club Members · Karachi
+                    </p>
+                    <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                      3.2K+
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-md text-[#228B4E] shadow-inner">
+                    <Users className="h-5 w-5 text-[#228B4E]" />
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-[#D6EFE0]">
+                    <span className="font-bold text-white">240+ matches</span> monthly
+                  </p>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E]/45 bg-[#228B4E]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#228B4E] animate-pulse" />
+                    +12% vs last mo
+                  </span>
+                </div>
+              </div>
+
+              {/* KPI Card 2: Configured Padel Courts */}
+              <div className="relative overflow-hidden rounded-2xl border border-[#228B4E]/30 hover:border-[#228B4E] bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                      Configured Padel Courts
+                    </p>
+                    <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                      {cliftonCourts.filter((c) => c.status === 'Active').length} /{' '}
+                      {cliftonCourts.length}
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-md text-[#228B4E] shadow-inner">
+                    <Grid className="h-5 w-5 text-[#228B4E]" />
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-[#D6EFE0]">
+                    <span className="font-bold text-white">
+                      {cliftonCourts.filter((c) => c.environment === 'Indoor').length} Indoor
+                    </span>{' '}
+                    ·{' '}
+                    <span className="font-bold text-white">
+                      {cliftonCourts.filter((c) => c.environment === 'Outdoor').length} Outdoor
+                    </span>
+                  </p>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E]/45 bg-[#228B4E]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#228B4E] animate-pulse" />
+                    FIP Live
+                  </span>
+                </div>
+              </div>
+
+              {/* KPI Card 3: Average Court Utilization */}
+              <div className="relative overflow-hidden rounded-2xl border border-[#228B4E]/30 hover:border-[#228B4E] bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                      Average Court Utilization
+                    </p>
+                    <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                      94%
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-md text-[#228B4E] shadow-inner">
+                    <TrendingUp className="h-5 w-5 text-[#228B4E]" />
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-[#D6EFE0]">
+                    <span className="font-bold text-white">99%</span> member rating
+                  </p>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E]/45 bg-[#228B4E]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+                    +8.4% vs last mo
+                  </span>
+                </div>
+              </div>
+
+              {/* KPI Card 4: Est. Daily Court Revenue (Primary Business Anchor with Brighter Emerald Border Accent) */}
+              <div className="relative overflow-hidden rounded-2xl border-2 border-[#228B4E]/80 hover:border-[#228B4E] ring-1 ring-[#228B4E]/30 bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#228B4E]/20 blur-xl"
+                />
+                <div className="relative z-10 flex items-start justify-between gap-3">
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                      Est. Daily Court Revenue
+                    </p>
+                    <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                      <span className="font-black text-[#228B4E]">PKR</span>{' '}
+                      <span className="text-[#FFFFFF]">
+                        {cliftonCourts
+                          .filter((c) => c.status === 'Active')
+                          .reduce(
+                            (sum, c) =>
+                              sum + c.baseRatePkr * 4 + c.peakRatePkr * 5,
+                            0
+                          )
+                          .toLocaleString('en-PK')}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#228B4E]/60 bg-white/15 backdrop-blur-md text-[#228B4E] shadow-inner">
+                    <Wallet className="h-5 w-5 text-[#228B4E]" />
+                  </div>
+                </div>
+
+                <div className="relative z-10 mt-4 pt-3 border-t border-white/15 flex items-center justify-between gap-2">
+                  <p className="font-mono text-xs font-semibold text-[#D6EFE0] tabular-nums">
+                    Avg Peak:{' '}
+                    <span className="font-bold text-[#228B4E]">PKR</span>{' '}
+                    <span className="font-bold text-white">
+                      {Math.round(
+                        cliftonCourts.reduce((s, c) => s + c.peakRatePkr, 0) /
+                          Math.max(1, cliftonCourts.length)
+                      ).toLocaleString('en-PK')}
+                      /hr
+                    </span>
+                  </p>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E] bg-[#228B4E]/30 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#228B4E] animate-pulse" />
+                    Raast Verified
+                  </span>
+                </div>
+              </div>
+            </section>
 
             {/* Grid: Manage Courts (Left 7 cols) + Manage Branding & Timings (Right 5 cols) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -1859,10 +2364,68 @@ export function PakPadelPortalApp() {
   // VIEW 4: SUPER ADMIN DASHBOARD ('dashboard_super' -> super@pakpadel.pk)
   // ============================================================================
   return (
-    <div className="min-h-screen bg-[#F7FAF8] text-[#102117] transition-opacity duration-500">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#F7FAF8] text-[#102117] transition-opacity duration-500">
       {/* Super Admin Top Navigation Bar — Pakistan Green (#01411C) with #FFFFFF text */}
-      <header className="sticky top-0 z-40 border-b border-[#003014] bg-[#01411C] text-[#FFFFFF]">
-        <div className="mx-auto flex max-w-[1360px] flex-wrap items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
+      <header
+        ref={superProfilePopoverRef}
+        className="sticky top-0 z-40 border-b border-[#003014] bg-[#01411C] text-[#FFFFFF]"
+      >
+        {/* Mobile (< sm): Compact single-line horizontal bar (h-12 flex items-center justify-between px-3) */}
+        <div className="h-12 flex sm:hidden items-center justify-between px-3 gap-2">
+          <div
+            className="flex items-center gap-2 min-w-0"
+            title="PakPadel Super Admin Control Center · Authenticated: super@pakpadel.pk"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoSrc}
+              alt="PakPadel"
+              referrerPolicy="no-referrer"
+              className="h-7 w-auto object-contain rounded-md bg-[#FFFFFF] p-0.5 shrink-0"
+            />
+            <span className="font-display text-xs font-bold text-[#FFFFFF] truncate">
+              Super Admin HQ
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 relative">
+            <button
+              type="button"
+              onClick={() => navigateToView('landing')}
+              className="h-8 rounded-lg border border-[#FFFFFF]/25 bg-[#003014] px-2.5 text-[11px] font-semibold text-[#FFFFFF] whitespace-nowrap"
+            >
+              Landing
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateToView('login')}
+              title="Switch Role / Sign Out"
+              aria-label="Switch Role / Sign Out"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#228B4E] text-[#FFFFFF]"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSuperProfilePopoverOpen((prev) => !prev)}
+              aria-expanded={superProfilePopoverOpen}
+              aria-haspopup="menu"
+              aria-label="Super Admin Account Menu"
+              className="inline-flex h-8 items-center gap-1 rounded-lg border border-[#FFFFFF]/25 bg-[#003014]/80 px-2 text-[11px] font-bold text-[#FFFFFF]"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-[#228B4E]" />
+              <span>Account</span>
+              <ChevronDown
+                className={`h-3 w-3 transition-transform duration-200 ${
+                  superProfilePopoverOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop (>= sm): Full horizontal layout */}
+        <div className="hidden sm:flex mx-auto max-w-[1360px] flex-wrap items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -1882,57 +2445,21 @@ export function PakPadelPortalApp() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Super Admin Profile Popover with "Click Outside to Close" */}
-            <div ref={superProfilePopoverRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setSuperProfilePopoverOpen((prev) => !prev)}
-                aria-expanded={superProfilePopoverOpen}
-                aria-haspopup="menu"
-                className="min-h-[40px] inline-flex items-center gap-2 rounded-xl border border-[#FFFFFF]/25 bg-[#003014]/70 px-3.5 py-2 text-xs font-bold text-[#FFFFFF] transition-all duration-200 ease-in-out hover:bg-[#18271C] whitespace-nowrap"
-              >
-                <ShieldCheck className="h-3.5 w-3.5 text-[#228B4E]" />
-                <span>Super Admin HQ</span>
-                <ChevronDown
-                  className={`h-3.5 w-3.5 transition-all duration-200 ease-in-out ${
-                    superProfilePopoverOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {superProfilePopoverOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 mt-2 w-64 rounded-2xl border border-[#102117]/15 bg-[#FFFFFF] p-2 text-[#102117] shadow-2xl z-50 space-y-1 transition-all duration-200 ease-in-out"
-                >
-                  <div className="px-3 py-2 border-b border-[#102117]/10">
-                    <p className="font-display text-xs font-bold text-[#102117]">
-                      PakPadel Global Governance
-                    </p>
-                    <p className="font-mono text-[11px] text-[#228B4E]">
-                      super@pakpadel.pk
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => navigateToView('dashboard_club')}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#01411C] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                  >
-                    <span>Switch to Clifton Club Admin</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-[#228B4E]" />
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => navigateToView('landing')}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
-                  >
-                    <span>Public Marketing Page</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={() => setSuperProfilePopoverOpen((prev) => !prev)}
+              aria-expanded={superProfilePopoverOpen}
+              aria-haspopup="menu"
+              className="min-h-[40px] inline-flex items-center gap-2 rounded-xl border border-[#FFFFFF]/25 bg-[#003014]/70 px-3.5 py-2 text-xs font-bold text-[#FFFFFF] transition-all duration-200 ease-in-out hover:bg-[#18271C] whitespace-nowrap"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-[#228B4E]" />
+              <span>Super Admin HQ</span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-all duration-200 ease-in-out ${
+                  superProfilePopoverOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
 
             <button
               type="button"
@@ -1951,9 +2478,53 @@ export function PakPadelPortalApp() {
             </button>
           </div>
         </div>
+
+        {/* Shared Mobile & Desktop Super Admin Popover */}
+        {superProfilePopoverOpen && (
+          <div className="mx-auto max-w-[1360px] relative px-3 sm:px-8">
+            <div
+              role="menu"
+              className="absolute right-3 sm:right-8 mt-1.5 w-64 rounded-2xl border border-[#102117]/15 bg-[#FFFFFF] p-2 text-[#102117] shadow-2xl z-50 space-y-1 transition-all duration-200 ease-in-out"
+            >
+              <div className="px-3 py-2 border-b border-[#102117]/10">
+                <p className="font-display text-xs font-bold text-[#102117]">
+                  PakPadel Global Governance
+                </p>
+                <p className="font-mono text-[11px] text-[#228B4E]">
+                  super@pakpadel.pk
+                </p>
+              </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigateToView('dashboard_club')}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#01411C] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+              >
+                <span>Switch to Clifton Club Admin</span>
+                <ArrowRight className="h-3.5 w-3.5 text-[#228B4E]" />
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigateToView('landing')}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#102117] transition-all duration-200 ease-in-out hover:bg-[#D6EFE0]/50"
+              >
+                <span>Public Marketing Page</span>
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigateToView('login')}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-700 transition-all duration-200 ease-in-out hover:bg-red-50"
+              >
+                <span>Switch Role / Sign Out</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
-      <main className="mx-auto max-w-[1360px] px-5 py-8 sm:px-8 space-y-8">
+      <main className="mx-auto max-w-[1360px] px-4 py-6 sm:px-8 sm:py-8 space-y-6 sm:space-y-8">
         {/* Required Super Admin Welcome Banner (#01411C with #FFFFFF text) */}
         <div className="rounded-2xl border border-[#003014] bg-[#01411C] text-[#FFFFFF] p-6 sm:p-8 shadow-lg">
           <p className="text-xs font-semibold text-[#FFFFFF]/85">

@@ -12,12 +12,15 @@ import {
   MapPin,
   Phone,
   CheckCircle2,
+  Users,
+  Grid,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import {
   ClubBranch,
   validateClubProfileInput,
   calculateClubMetrics,
-  formatPkr,
 } from '@/lib/club-logic';
 
 interface ClubProfileTabProps {
@@ -214,57 +217,130 @@ export function ClubProfileTab({
 
   return (
     <div className="space-y-6">
-      {/* Top Metrics & Stats Cards: grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 */}
+      {/* Top Metrics & Stats Cards: grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 */}
       <section
         aria-label="Club operational metrics"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5"
       >
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-medium text-slate-500">
-            Active Club Members · {city}
-          </p>
-          <p className="mt-1.5 font-mono text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
-            3.2K+
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            240+ matches played monthly
-          </p>
+        {/* KPI Card 1: Active Club Members */}
+        <div className="relative overflow-hidden rounded-2xl border border-[#228B4E]/30 hover:border-[#228B4E] bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                Active Club Members · {city}
+              </p>
+              <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                3.2K+
+              </p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-md text-[#228B4E] shadow-inner">
+              <Users className="h-5 w-5 text-[#228B4E]" />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-[#D6EFE0]">
+              <span className="font-bold text-white">240+ matches</span> monthly
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E]/45 bg-[#228B4E]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#228B4E] animate-pulse" />
+              +12% vs last mo
+            </span>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-medium text-slate-500">
-            Configured Padel Courts
-          </p>
-          <p className="mt-1.5 font-mono text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
-            {metrics.activeCourts} / {metrics.totalCourts}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            {metrics.indoorCount} Indoor · {metrics.outdoorCount} Outdoor
-          </p>
+        {/* KPI Card 2: Configured Padel Courts */}
+        <div className="relative overflow-hidden rounded-2xl border border-[#228B4E]/30 hover:border-[#228B4E] bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                Configured Padel Courts
+              </p>
+              <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                {metrics.activeCourts} / {metrics.totalCourts}
+              </p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-md text-[#228B4E] shadow-inner">
+              <Grid className="h-5 w-5 text-[#228B4E]" />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-[#D6EFE0]">
+              <span className="font-bold text-white">{metrics.indoorCount} Indoor</span> ·{' '}
+              <span className="font-bold text-white">{metrics.outdoorCount} Outdoor</span>
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E]/45 bg-[#228B4E]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#228B4E] animate-pulse" />
+              FIP Live
+            </span>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-medium text-slate-500">
-            Average Court Utilization
-          </p>
-          <p className="mt-1.5 font-mono text-2xl font-bold tracking-tight text-emerald-600 tabular-nums">
-            {metrics.avgUtilizationPct}%
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            99% member satisfaction rate
-          </p>
+        {/* KPI Card 3: Average Court Utilization */}
+        <div className="relative overflow-hidden rounded-2xl border border-[#228B4E]/30 hover:border-[#228B4E] bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                Average Court Utilization
+              </p>
+              <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                {metrics.avgUtilizationPct}%
+              </p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-md text-[#228B4E] shadow-inner">
+              <TrendingUp className="h-5 w-5 text-[#228B4E]" />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-[#D6EFE0]">
+              <span className="font-bold text-white">99%</span> member rating
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E]/45 bg-[#228B4E]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              +8.4% vs last mo
+            </span>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-medium text-slate-500">
-            Est. Daily Court Revenue
-          </p>
-          <p className="mt-1.5 font-mono text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
-            {formatPkr(metrics.estimatedDailyRevenuePkr)}
-          </p>
-          <p className="mt-1 font-mono text-xs text-slate-500 tabular-nums">
-            Avg Peak: {formatPkr(metrics.avgPeakRatePkr)}/hr
-          </p>
+        {/* KPI Card 4: Est. Daily Court Revenue (Primary Business Anchor with Brighter Emerald Border Accent) */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-[#228B4E]/80 hover:border-[#228B4E] ring-1 ring-[#228B4E]/30 bg-gradient-to-br from-[#01411C] to-[#002b12] p-5 shadow-lg shadow-[#01411C]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#228B4E]/20 blur-xl"
+          />
+          <div className="relative z-10 flex items-start justify-between gap-3">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#D6EFE0]/80">
+                Est. Daily Court Revenue
+              </p>
+              <p className="font-mono text-3xl font-black text-white tracking-tight tabular-nums">
+                <span className="font-black text-[#228B4E]">PKR</span>{' '}
+                <span className="text-[#FFFFFF]">
+                  {Math.round(metrics.estimatedDailyRevenuePkr).toLocaleString(
+                    'en-PK'
+                  )}
+                </span>
+              </p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#228B4E]/60 bg-white/15 backdrop-blur-md text-[#228B4E] shadow-inner">
+              <Wallet className="h-5 w-5 text-[#228B4E]" />
+            </div>
+          </div>
+
+          <div className="relative z-10 mt-4 pt-3 border-t border-white/15 flex items-center justify-between gap-2">
+            <p className="font-mono text-xs font-semibold text-[#D6EFE0] tabular-nums">
+              Avg Peak:{' '}
+              <span className="font-bold text-[#228B4E]">PKR</span>{' '}
+              <span className="font-bold text-white">
+                {Math.round(metrics.avgPeakRatePkr).toLocaleString('en-PK')}/hr
+              </span>
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#228B4E] bg-[#228B4E]/30 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#228B4E] animate-pulse" />
+              Raast Verified
+            </span>
+          </div>
         </div>
       </section>
 
@@ -288,8 +364,8 @@ export function ClubProfileTab({
                 </span>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
+              <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="lg:col-span-2">
                   <label
                     htmlFor="club-name-input"
                     className="block text-xs font-semibold text-slate-700"
@@ -369,7 +445,7 @@ export function ClubProfileTab({
                   </div>
                 </div>
 
-                <div className="sm:col-span-2">
+                <div className="lg:col-span-2">
                   <label
                     htmlFor="club-address-input"
                     className="block text-xs font-semibold text-slate-700"
@@ -611,7 +687,7 @@ export function ClubProfileTab({
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
             {amenities.map((amenity) => {
               const checkboxId = `amenity-checkbox-${amenity.id}`;
               return (
